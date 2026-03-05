@@ -24,4 +24,4 @@ MarkdownViewer is a lightweight macOS app that renders `.md` and `.markdown` fil
 
 ## Quick Look Status
 
-Quick Look integration is not implemented yet. Finder preview support will require a separate Quick Look extension that is not included in this repository.
+Quick Look integration is implemented via a Quick Look Preview extension target. Build the app in Xcode, then use Finder Spacebar preview on `.md` files. If the preview does not appear immediately, restart Quick Look or re-register the app.

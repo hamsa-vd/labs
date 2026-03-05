@@ -68,6 +68,9 @@ struct ContentView: View {
             allowsMultipleSelection: false,
             onCompletion: handleImport(result:)
         )
+        .onOpenURL { url in
+            handleOpenURL(url)
+        }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Button {
@@ -178,6 +181,15 @@ struct ContentView: View {
         case .failure(let error):
             presentError(error)
         }
+    }
+
+    private func handleOpenURL(_ url: URL) {
+        guard url.isFileURL else { return }
+        guard isSupportedMarkdownFile(url) else {
+            presentErrorMessage("Only .md and .markdown files are supported.")
+            return
+        }
+        loadMarkdown(from: url)
     }
 
     private func handleDrop(providers: [NSItemProvider]) -> Bool {
