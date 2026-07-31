@@ -1,0 +1,11 @@
+{
+  "name": "design-systems",
+  "private": true,
+  "description": "Monorepo of design systems. Source-only packages: tokens, assets, components, UI kits.",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "serve": "npx --yes serve ."
+  }
+}

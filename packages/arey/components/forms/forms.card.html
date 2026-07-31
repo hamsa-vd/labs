@@ -1,0 +1,43 @@
+<!-- @dsCard group="Components" viewport="700x330" name="Forms" subtitle="Field, Input, Textarea, Select, Checkbox, Radio, Switch" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<style>html,body{margin:0}body{background:var(--bg-base);padding:20px;font:var(--type-body);color:var(--text-body)}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.col{display:grid;gap:14px}
+.lbl{font:var(--type-eyebrow);letter-spacing:var(--tracking-eyebrow);text-transform:uppercase;color:var(--text-tertiary)}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script></head>
+<body><div id="root"></div>
+<script type="text/babel">
+const NS = window.AreyDesignSystem_1909f9;
+
+const { Field, Input, Textarea, Select, Checkbox, Radio, RadioGroup, Switch, Kbd } = NS;
+function Demo() {
+  const [v, setV] = React.useState('private');
+  return (
+    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:24}}>
+      <div className="col">
+        <Field label="Project name" hint="Lowercase letters, numbers and dashes"><Input placeholder="arey-web" /></Field>
+        <Field label="API key"><Input mono defaultValue="sk_live_9f2a7c41e8" /></Field>
+        <Input icon="magnifying-glass" placeholder="Search projects" suffix={<Kbd keys="cmd+k" />} />
+        <Field label="Region" error="Choose a region to continue"><Select invalid placeholder="Choose a region" options={[{value:'iad1',label:'Washington, D.C. (iad1)'},{value:'bom1',label:'Mumbai (bom1)'}]} /></Field>
+      </div>
+      <div className="col">
+        <Field label="Environment variables"><Textarea mono rows={3} defaultValue={'DATABASE_URL=postgres://…\nAPI_KEY=sk_live_…'} /></Field>
+        <div className="col" style={{gap:10}}>
+          <Checkbox label="Include preview deployments" defaultChecked />
+          <Checkbox label="Email me on failure" description="Sent to the project owner only" />
+          <Checkbox indeterminate aria-label="Select all" label="Select all" />
+        </div>
+        <RadioGroup name="vis" value={v} onChange={setV} direction="row" options={[{value:'private',label:'Private'},{value:'public',label:'Public'}]} />
+        <div className="col" style={{gap:10}}>
+          <Switch label="Automatic deployments" defaultChecked />
+          <Switch tone="accent" size="sm" label="Preview comments" defaultChecked />
+        </div>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+</script></body></html>

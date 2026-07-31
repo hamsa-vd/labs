@@ -1,0 +1,112 @@
+/* arey color — pure neutral greyscale + a single blue. Dual theme, equal weight. */
+:root{
+  /* base neutrals (light ramp) */
+  --grey-0:#ffffff;--grey-25:#fcfcfc;--grey-50:#fafafa;--grey-100:#f5f5f5;--grey-150:#efefef;
+  --grey-200:#e8e8e8;--grey-300:#dcdcdc;--grey-400:#c4c4c4;--grey-500:#9b9b9b;--grey-600:#717171;
+  --grey-700:#4d4d4d;--grey-800:#303030;--grey-900:#1b1b1b;--grey-950:#111111;--grey-1000:#000000;
+
+  /* base blue */
+  --blue-50:#eef6ff;--blue-100:#d8ebff;--blue-200:#addbff;--blue-300:#6ec1ff;
+  --blue-400:#2b9bfb;--blue-500:#0071e3;--blue-600:#0062c4;--blue-700:#0050a0;--blue-800:#003f7d;
+
+  /* base semantics */
+  --green-500:#1d8f56;--green-100:#e4f6ec;
+  --red-500:#d70015;--red-100:#ffe8e8;
+  --amber-500:#b25000;--amber-100:#fff1e0;
+
+  /* alpha scales — for borders and washes over any surface */
+  --alpha-ink-4:rgba(0,0,0,.04);--alpha-ink-6:rgba(0,0,0,.06);--alpha-ink-8:rgba(0,0,0,.08);
+  --alpha-ink-12:rgba(0,0,0,.12);--alpha-ink-20:rgba(0,0,0,.20);--alpha-ink-60:rgba(0,0,0,.60);
+  --alpha-paper-8:rgba(255,255,255,.08);--alpha-paper-12:rgba(255,255,255,.12);
+  --alpha-paper-60:rgba(255,255,255,.60);--alpha-paper-72:rgba(255,255,255,.72);
+}
+
+/* ---- semantic aliases: light ---- */
+:root,[data-theme="light"]{
+  color-scheme:light;
+  --bg-canvas:var(--grey-100);
+  --bg-base:var(--grey-0);
+  --bg-subtle:var(--grey-50);
+  --bg-inset:var(--grey-100);
+  --bg-hover:var(--alpha-ink-4);
+  --bg-active:var(--alpha-ink-8);
+  --bg-selected:var(--blue-50);
+  --bg-inverse:var(--grey-1000);
+
+  --surface-card:var(--grey-0);
+  --surface-raised:var(--grey-0);
+  --surface-overlay:rgba(255,255,255,.72);
+  --surface-glass:rgba(250,250,250,.68);
+  --surface-scrim:rgba(0,0,0,.28);
+
+  --text-primary:var(--grey-1000);
+  --text-body:var(--grey-800);
+  --text-secondary:var(--grey-600);
+  --text-tertiary:var(--grey-500);
+  --text-disabled:var(--grey-400);
+  --text-inverse:var(--grey-0);
+  --text-link:var(--blue-500);
+  --text-accent:var(--blue-600);
+
+  --border-subtle:var(--alpha-ink-6);
+  --border-default:var(--alpha-ink-12);
+  --border-strong:var(--alpha-ink-20);
+  --border-glass:rgba(255,255,255,.7);
+  --border-focus:var(--blue-500);
+
+  --accent-solid:var(--blue-500);
+  --accent-solid-hover:var(--blue-600);
+  --accent-solid-active:var(--blue-700);
+  --accent-wash:var(--blue-50);
+  --accent-border:var(--blue-200);
+  --accent-text-on:var(--grey-0);
+
+  --success-solid:var(--green-500);--success-wash:var(--green-100);--success-text:#116b3d;
+  --danger-solid:var(--red-500);--danger-wash:var(--red-100);--danger-text:#a80010;
+  --warning-solid:var(--amber-500);--warning-wash:var(--amber-100);--warning-text:#8c3f00;
+}
+
+/* ---- semantic aliases: dark ---- */
+[data-theme="dark"]{
+  color-scheme:dark;
+  --bg-canvas:#000000;
+  --bg-base:#0a0a0a;
+  --bg-subtle:#141414;
+  --bg-inset:#1a1a1a;
+  --bg-hover:var(--alpha-paper-8);
+  --bg-active:var(--alpha-paper-12);
+  --bg-selected:rgba(10,132,255,.16);
+  --bg-inverse:#fafafa;
+
+  --surface-card:#111111;
+  --surface-raised:#1a1a1a;
+  --surface-overlay:rgba(24,24,24,.76);
+  --surface-glass:rgba(18,18,18,.64);
+  --surface-scrim:rgba(0,0,0,.56);
+
+  --text-primary:#ffffff;
+  --text-body:#e8e8e8;
+  --text-secondary:#a1a1a1;
+  --text-tertiary:#787878;
+  --text-disabled:#525252;
+  --text-inverse:#0a0a0a;
+  --text-link:#0a84ff;
+  --text-accent:#4aa8ff;
+
+  --border-subtle:rgba(255,255,255,.06);
+  --border-default:rgba(255,255,255,.12);
+  --border-strong:rgba(255,255,255,.22);
+  --border-glass:rgba(255,255,255,.1);
+  --border-focus:#0a84ff;
+
+  --accent-solid:#0a84ff;
+  --accent-solid-hover:#3b9dff;
+  --accent-solid-active:#0071e3;
+  --accent-wash:rgba(10,132,255,.14);
+  --accent-border:rgba(10,132,255,.36);
+  --accent-text-on:#ffffff;
+
+  --success-solid:#30d158;--success-wash:rgba(48,209,88,.14);--success-text:#5ee07f;
+  --danger-solid:#ff453a;--danger-wash:rgba(255,69,58,.14);--danger-text:#ff7a70;
+  --warning-solid:#ff9f0a;--warning-wash:rgba(255,159,10,.14);--warning-text:#ffb849;
+}
