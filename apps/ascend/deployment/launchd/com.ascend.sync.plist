@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd, not cron: cron handles sleep and missed runs badly on macOS.
+  Install:  cp to ~/Library/LaunchAgents/ then `launchctl load -w` it.
+  See architecture §8.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>              <string>com.ascend.sync</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-lc</string>
+    <string>cd /Users/CHANGEME/repos/labs/apps/ascend &amp;&amp; pnpm sync:incremental</string>
+  </array>
+  <key>StartInterval</key>      <integer>600</integer>
+  <key>RunAtLoad</key>          <true/>
+  <key>StandardOutPath</key>    <string>/Users/CHANGEME/Library/Logs/ascend-sync.log</string>
+  <key>StandardErrorPath</key>  <string>/Users/CHANGEME/Library/Logs/ascend-sync.error.log</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>NODE_ENV</key>         <string>production</string>
+  </dict>
+</dict>
+</plist>

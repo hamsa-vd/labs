@@ -1,0 +1,11 @@
+{
+  "name": "labs",
+  "private": true,
+  "packageManager": "pnpm@10.17.1",
+  "scripts": {
+    "ascend:dev": "pnpm --filter @labs/ascend dev",
+    "ascend:build": "pnpm --filter @labs/ascend build",
+    "ascend:check": "pnpm --filter @labs/ascend check",
+    "ascend:test": "pnpm --filter @labs/ascend test"
+  }
+}

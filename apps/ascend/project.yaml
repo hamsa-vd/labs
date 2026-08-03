@@ -1,0 +1,34 @@
+name: ascend
+description: Invite-only job-application tracker derived from Gmail events
+status: scaffold
+language: typescript
+runtime: node
+kind: web-application
+clients:
+  - responsive-web
+  - installable-pwa
+design_system:
+  package: "@hamsa-designs/arey"
+  # Ships raw .jsx from node_modules; SWC skips node_modules by default.
+  requires_transpile_packages: true
+  # Component CSS is injected at runtime and no-ops on the server, so it is
+  # harvested at build time instead. See architecture 12.1.
+  css_extraction: pnpm design-system:css
+deployment:
+  target: mac-mini
+  process_manager: launchd
+  ingress: cloudflare-access-and-tunnel
+  access_zones:
+    bypass:
+      - /welcome
+      - /privacy
+      - /status
+      - /api/v1/invite-requests
+    allow: everything-else
+commands:
+  dev: pnpm dev
+  check: pnpm check
+  test: pnpm test
+  build: pnpm build
+  eval: pnpm eval
+  design_system_css: pnpm design-system:css

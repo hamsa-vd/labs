@@ -1,0 +1,42 @@
+{
+  "name": "@labs/ascend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "design-system:css": "tsx scripts/extract-design-system-css.ts",
+    "predev": "pnpm design-system:css",
+    "dev": "next dev",
+    "prebuild": "pnpm design-system:css",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "sync:incremental": "tsx scripts/sync-incremental.ts",
+    "sync:backfill": "tsx scripts/sync-backfill.ts",
+    "eval": "tsx scripts/evaluate.ts",
+    "retention": "tsx scripts/retention.ts"
+  },
+  "dependencies": {
+    "@hamsa-designs/arey": "^1.0.1",
+    "jose": "^6.1.0",
+    "next": "16.2.12",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.2",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "esbuild": "0.28.1",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.2.12",
+    "tsx": "4.23.5",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}
