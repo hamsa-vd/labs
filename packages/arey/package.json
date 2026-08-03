@@ -1,6 +1,6 @@
 {
   "name": "@hamsa-designs/arey",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The Arey design system: tokens, styles, assets, React components, and agent guidance.",
   "type": "module",
   "sideEffects": [
@@ -9,11 +9,13 @@
   ],
   "files": [
     "assets",
+    "agents",
     "components",
     "guidelines",
     "tokens",
     "ui_kits",
     "readme.md",
+    "hamsa-design.json",
     "SKILL.md",
     "styles.css"
   ],
@@ -25,6 +27,8 @@
     },
     "./tokens/*": "./tokens/*",
     "./assets/*": "./assets/*",
+    "./manifest": "./hamsa-design.json",
+    "./guidelines": "./readme.md",
     "./skill": "./SKILL.md"
   },
   "peerDependencies": {

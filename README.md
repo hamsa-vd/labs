@@ -11,6 +11,7 @@ hamsa-designs/
   package.json               ← npm workspaces root (no build step; packages are source-only)
   packages/
     arey/                    ← system #1
+      hamsa-design.json      ← machine-readable discovery manifest
       styles.css             ← the only fixed path: the global entry, @import lines only
       tokens/                ← colors, typography, spacing, radius, elevation, motion, fonts, base
       assets/                ← logo.svg, logo-mark.svg
@@ -19,7 +20,12 @@ hamsa-designs/
       guidelines/            ← foundation specimen cards (.html)
       readme.md              ← the design guide: content fundamentals, visual foundations, iconography
       SKILL.md               ← agent-skill wrapper
+      agents/                ← Codex skill metadata
       thumbnail.html
+    agent/                   ← one-time cross-system agent integration
+      SKILL.md               ← discovers the design system used by the current project
+      scripts/detect.mjs     ← resolves @hamsa-designs/* manifests
+      bin/cli.mjs            ← user-level Claude/Codex skill installer
 ```
 
 ## Systems
@@ -27,6 +33,28 @@ hamsa-designs/
 | Package | Brand | Status | Surfaces |
 | --- | --- | --- | --- |
 | `@hamsa-designs/arey` | arey | Active | Console (web app) · Docs · Mobile (iOS) |
+
+## Agent integration
+
+Applications do not need design-system-specific `CLAUDE.md`, `AGENTS.md`, or Copilot instruction files. The installed design-system dependency is the source of truth.
+
+Install the Hamsa integration once for your user account:
+
+```sh
+npx @hamsa-designs/agent install all
+```
+
+The shared skill detects dependencies matching `@hamsa-designs/*`, resolves each package's `hamsa-design.json`, and loads its canonical skill and guidelines. Adding Arey to an application is then sufficient:
+
+```sh
+pnpm add @hamsa-designs/arey
+```
+
+The agent package is versioned separately from every design system. Replace an existing user-level installation only during an intentional upgrade:
+
+```sh
+npx @hamsa-designs/agent install all --force
+```
 
 ## Using Arey
 
@@ -50,7 +78,7 @@ import '@hamsa-designs/arey/tokens/colors.css';
 import logoUrl from '@hamsa-designs/arey/assets/logo.svg';
 ```
 
-The complete design guidance remains in `packages/arey/readme.md`; agent tools can consume `packages/arey/SKILL.md` or the exported `@hamsa-designs/arey/skill` file.
+The complete design guidance remains in `packages/arey/readme.md`, and `hamsa-design.json` tells the shared integration where every relevant resource lives.
 
 ## Rules that keep the monorepo coherent
 
