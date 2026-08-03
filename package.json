@@ -1,7 +1,7 @@
 {
-  "name": "design-systems",
+  "name": "hamsa-designs",
   "private": true,
-  "description": "Monorepo of design systems. Source-only packages: tokens, assets, components, UI kits.",
+  "description": "Hamsa Designs monorepo: reusable design-system packages, assets, components, and agent guidance.",
   "workspaces": [
     "packages/*"
   ],

@@ -1,11 +1,11 @@
-# design-systems
+# Hamsa Designs
 
-A monorepo of design systems. Each package is a self-contained system: tokens, assets, components, UI kits, guidelines, and a `SKILL.md` so it can be used directly as an agent skill.
+A monorepo of independently versioned design systems published under the `@hamsa-designs` scope. Each package contains tokens, assets, components, UI kits, guidelines, and a `SKILL.md` for design agents.
 
 ## Layout
 
 ```
-design-systems/
+hamsa-designs/
   README.md                  ← this file
   ADDING-A-SYSTEM.md         ← conventions + checklist for system #2 onward
   package.json               ← npm workspaces root (no build step; packages are source-only)
@@ -26,21 +26,31 @@ design-systems/
 
 | Package | Brand | Status | Surfaces |
 | --- | --- | --- | --- |
-| `packages/arey` | arey | Active | Console (web app) · Docs · Mobile (iOS) |
+| `@hamsa-designs/arey` | arey | Active | Console (web app) · Docs · Mobile (iOS) |
 
-## Consuming a system
+## Using Arey
 
-Link the one global stylesheet and use the components as source:
+Install the package from the workspace or configured package registry:
 
-```html
-<link rel="stylesheet" href="packages/arey/styles.css">
+```sh
+pnpm add @hamsa-designs/arey
 ```
 
 ```jsx
-import { Button } from './packages/arey/components/core/Button.jsx';
+import '@hamsa-designs/arey/styles.css';
+import { Button, Card, Input } from '@hamsa-designs/arey/react';
 ```
 
-Components are plain JSX with no dependencies beyond React. All styling resolves through CSS custom properties, so a system can be dropped into any stack — the only contract is that `styles.css` is loaded and `data-theme` is set on `<html>`.
+Components are plain JSX with React as a peer dependency. All styling resolves through CSS custom properties. Load `styles.css` once and set `data-theme` on `<html>` when selecting a theme.
+
+Tokens and assets also have stable subpath exports:
+
+```js
+import '@hamsa-designs/arey/tokens/colors.css';
+import logoUrl from '@hamsa-designs/arey/assets/logo.svg';
+```
+
+The complete design guidance remains in `packages/arey/readme.md`; agent tools can consume `packages/arey/SKILL.md` or the exported `@hamsa-designs/arey/skill` file.
 
 ## Rules that keep the monorepo coherent
 
