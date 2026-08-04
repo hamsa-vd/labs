@@ -1,7 +1,7 @@
 /* arey type. Sans for everything readable; mono for anything machine-adjacent. */
 :root{
   --font-sans:"Instrument Sans","Helvetica Neue",Helvetica,system-ui,sans-serif;
-  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --font-mono:"Space Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 
   /* size ramp */
   --text-11:11px;--text-12:12px;--text-13:13px;--text-14:14px;--text-15:15px;--text-16:16px;

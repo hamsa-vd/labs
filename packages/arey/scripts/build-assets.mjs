@@ -27,6 +27,12 @@ const tokensDir = path.join(dist, 'tokens');
 rmSync(tokensDir, { recursive: true, force: true });
 cpSync(path.join(root, 'tokens'), tokensDir, { recursive: true });
 
+// 2b. Copy bundled font assets into dist. fonts.css uses paths relative to its
+// token directory, so the generated stylesheet must keep the same ../assets layout.
+const distFontsDir = path.join(dist, 'assets', 'fonts');
+rmSync(distFontsDir, { recursive: true, force: true });
+cpSync(path.join(root, 'assets', 'fonts'), distFontsDir, { recursive: true });
+
 // 3. Assemble the self-contained stylesheet: vendored icon CSS first, then tokens.
 // All paths are relative to this file, so a plain <link> and a CSS bundler both resolve them
 // with no bare-specifier lookup into node_modules.
@@ -56,4 +62,4 @@ function copyDts(srcDir, destDir) {
 }
 copyDts(path.join(root, 'components'), dist);
 
-console.log('dist assets: styles.css, vendor/phosphor, tokens, *.d.ts');
+console.log('dist assets: styles.css, vendor/phosphor, tokens, assets/fonts, *.d.ts');

@@ -72,7 +72,7 @@ Every colour is consumed through a semantic alias (`--text-body`, `--surface-car
 
 ### Type
 
-`Instrument Sans` for everything readable; `JetBrains Mono` for everything machine-adjacent. Two faces, no third.
+`Instrument Sans` for everything readable; `Space Mono` for everything machine-adjacent. Two faces, no third. Both are bundled with the package under `assets/fonts`, so the stylesheet does not depend on a remote font service.
 
 Tracking tightens as size grows: `-0.03em` at display, `-0.02em` at headings, `-0.005em` at body, `0` at 12px and below. Weights used: 400, 500, 600. **700 is reserved and rarely used; there is no light weight.** Body copy is never centred except in an empty state or a modal. Prose is capped at `--prose-max` (68ch). Optical alignment matters more than grid alignment — a 56px display heading sits flush-left with the 14px paragraph beneath it.
 

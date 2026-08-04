@@ -1,5 +1,32 @@
 /* arey typefaces.
    Instrument Sans — UI + display. Geometric-leaning neo-grotesque, tight apertures.
-   JetBrains Mono  — mono accent: eyebrows, metadata, code, numerics.
-   SUBSTITUTION NOTE: no font binaries were supplied, so both are served from Google Fonts. */
-@import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+   Space Mono     — mono accent: eyebrows, metadata, code, numerics.
+   Font files are bundled under assets/fonts so consumers do not depend on a remote font CDN. */
+@font-face{
+  font-family:"Instrument Sans";
+  src:url("../assets/fonts/Instrument Sans/InstrumentSans[wdth,wght].woff2") format("woff2");
+  font-style:normal;
+  font-weight:400 700;
+  font-display:swap;
+}
+@font-face{
+  font-family:"Space Mono";
+  src:url("../assets/fonts/Space Mono/SpaceMono-Regular.ttf") format("truetype");
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+}
+@font-face{
+  font-family:"Space Mono";
+  src:url("../assets/fonts/Space Mono/SpaceMono-Bold.ttf") format("truetype");
+  font-style:normal;
+  font-weight:700;
+  font-display:swap;
+}
+@font-face{
+  font-family:"Space Mono";
+  src:url("../assets/fonts/Space Mono/SpaceMono-Italic.ttf") format("truetype");
+  font-style:italic;
+  font-weight:400;
+  font-display:swap;
+}
