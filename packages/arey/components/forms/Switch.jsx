@@ -5,10 +5,9 @@ injectSheet('arey-switch', `
 .arey-switch{display:inline-flex;align-items:center;gap:var(--space-3);cursor:pointer;font:var(--type-body);color:var(--text-body)}
 .arey-switch input{position:absolute;opacity:0;width:0;height:0}
 .arey-switch__track{position:relative;flex:none;width:42px;height:26px;border-radius:var(--radius-full);
-  background:var(--grey-300);transition:background-color var(--duration-normal) var(--ease-out),box-shadow var(--duration-fast) var(--ease-out)}
-[data-theme="dark"] .arey-switch__track{background:#39393d}
+  background:var(--switch-track-off);transition:background-color var(--duration-normal) var(--ease-out),box-shadow var(--duration-fast) var(--ease-out)}
 .arey-switch__track::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;
-  background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);
+  background:var(--switch-knob);box-shadow:0 1px 3px rgba(0,0,0,.25);
   transition:transform var(--duration-normal) var(--ease-spring)}
 .arey-switch input:checked + .arey-switch__track{background:var(--success-solid)}
 .arey-switch--accent input:checked + .arey-switch__track{background:var(--accent-solid)}

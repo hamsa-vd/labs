@@ -1,13 +1,17 @@
 {
   "name": "@hamsa-designs/arey",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "The Arey design system: tokens, styles, assets, React components, and agent guidance.",
   "type": "module",
   "sideEffects": [
     "./styles.css",
     "./tokens/*.css"
   ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
+    "dist",
     "assets",
     "agents",
     "components",
@@ -20,16 +24,24 @@
     "styles.css"
   ],
   "exports": {
-    "./styles.css": "./styles.css",
-    "./react": {
-      "types": "./components/index.d.ts",
-      "default": "./components/index.jsx"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
+    "./react": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css",
     "./tokens/*": "./tokens/*",
     "./assets/*": "./assets/*",
     "./manifest": "./hamsa-design.json",
     "./guidelines": "./readme.md",
     "./skill": "./SKILL.md"
+  },
+  "scripts": {
+    "build": "tsup && node scripts/build-assets.mjs",
+    "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
     "react": ">=18"
@@ -41,5 +53,14 @@
     "type": "git",
     "url": "git+ssh://git@github.com/hamsa-vd/hamsa-designs.git",
     "directory": "packages/arey"
+  },
+  "dependencies": {
+    "@phosphor-icons/web": "2.1.1"
+  },
+  "devDependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tsup": "^8.5.1",
+    "typescript": "^7.0.2"
   }
 }

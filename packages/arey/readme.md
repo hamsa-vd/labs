@@ -119,15 +119,18 @@ Bluish-purple gradients. Aggressive background gradients. Emoji. Cards with a co
 
 ## Iconography
 
-**Phosphor Icons**, loaded as a web font from CDN — chosen for its rounded terminals (which agree with the 12px radius language) and its six weights.
+**Phosphor Icons** — chosen for its rounded terminals (which agree with the 12px radius language) and its six weights. All six weights ship vendored inside the package; import `@hamsa-designs/arey/styles.css` once and every weight is available with no CDN dependency and no separate `<link>` tags:
 
-```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css">
+```js
+import '@hamsa-designs/arey/styles.css';
 ```
 
-**Substitution flag:** no icon assets were supplied with the brand, so Phosphor is the owner's chosen CDN set rather than a copy of an in-house library. Nothing was hand-drawn.
+```html
+<!-- disposable HTML prototypes: point at the built, self-contained stylesheet -->
+<link rel="stylesheet" href="https://unpkg.com/@hamsa-designs/arey/dist/styles.css">
+```
+
+**Substitution flag:** no icon assets were supplied with the brand, so Phosphor is the owner's chosen set rather than a copy of an in-house library. Nothing was hand-drawn.
 
 Rules:
 
@@ -141,10 +144,27 @@ Rules:
 
 ---
 
+## Consuming the package
+
+```sh
+npm install @hamsa-designs/arey
+```
+
+```jsx
+import '@hamsa-designs/arey/styles.css'; // once, anywhere near the app root — tokens + icon fonts
+import { Button, Card } from '@hamsa-designs/arey/react';
+```
+
+`@hamsa-designs/arey/react` resolves to a compiled `dist/` build (plain JS, `react` external, bundled
+type declarations) — no consumer build configuration (no `transpilePackages`, no JSX loader for
+`node_modules`) is required. Set `data-theme="dark"` on `<html>` for dark mode; every token and
+every component follows that switch automatically.
+
 ## Index
 
 **Root**
-- `styles.css` — the global entry. Import this one file. `@import` lines only.
+- `styles.css` — the source global entry (`@import` lines only); the published, self-contained
+  build is `dist/styles.css` (see above).
 - `readme.md` — this document.
 - `SKILL.md` — Agent Skills wrapper, so this folder works as a Claude Code skill.
 - `thumbnail.html` — homepage tile.
@@ -160,6 +180,8 @@ Rules:
 - `forms/` — Input, Textarea, Select, Checkbox, Radio, Switch, Field
 - `feedback/` — Dialog, Toast, Tooltip, Spinner, ProgressBar, EmptyState
 - `navigation/` — Tabs, SegmentedControl, Breadcrumbs, SidebarNav, ListRow
+- `data/` — Table, TableHead, TableCell, TableRow
+- `internal/` — `sheet.jsx`: shared `injectSheet`/`cx` runtime and the text-control base styles. Not part of the public export surface.
 
 **`ui_kits/`**
 - `console/` — arey Console web app (dashboard, table, detail, settings)

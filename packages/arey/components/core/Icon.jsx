@@ -1,11 +1,5 @@
 import React from 'react';
-import { injectFont, injectSheet, cx } from '../internal/sheet.jsx';
-
-const CDN = 'https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src';
-injectFont(CDN + '/regular/style.css', 'ph-regular');
-injectFont(CDN + '/bold/style.css', 'ph-bold');
-injectFont(CDN + '/fill/style.css', 'ph-fill');
-injectFont(CDN + '/duotone/style.css', 'ph-duotone');
+import { injectSheet, cx } from '../internal/sheet.jsx';
 
 injectSheet('arey-icon', `
 .arey-icon{display:inline-flex;align-items:center;justify-content:center;flex:none;line-height:1;color:inherit}

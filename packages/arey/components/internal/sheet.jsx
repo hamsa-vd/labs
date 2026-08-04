@@ -10,13 +10,6 @@ export function injectSheet(id, css) {
   el.textContent = css;
   document.head.appendChild(el);
 }
-export function injectFont(href, id) {
-  if (typeof document === 'undefined' || seen.has(id)) return;
-  seen.add(id);
-  const l = document.createElement('link');
-  l.rel = 'stylesheet'; l.href = href; l.setAttribute('data-arey', id);
-  document.head.appendChild(l);
-}
 export function cx() {
   return Array.prototype.filter.call(arguments, Boolean).join(' ');
 }

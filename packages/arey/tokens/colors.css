@@ -64,6 +64,9 @@
   --success-solid:var(--green-500);--success-wash:var(--green-100);--success-text:#116b3d;
   --danger-solid:var(--red-500);--danger-wash:var(--red-100);--danger-text:#a80010;
   --warning-solid:var(--amber-500);--warning-wash:var(--amber-100);--warning-text:#8c3f00;
+
+  --switch-track-off:var(--grey-300);
+  --switch-knob:var(--grey-0);
 }
 
 /* ---- semantic aliases: dark ---- */
@@ -109,4 +112,7 @@
   --success-solid:#30d158;--success-wash:rgba(48,209,88,.14);--success-text:#5ee07f;
   --danger-solid:#ff453a;--danger-wash:rgba(255,69,58,.14);--danger-text:#ff7a70;
   --warning-solid:#ff9f0a;--warning-wash:rgba(255,159,10,.14);--warning-text:#ffb849;
+
+  --switch-track-off:#39393d;
+  --switch-knob:#ffffff;
 }

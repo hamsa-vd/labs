@@ -11,7 +11,7 @@ injectSheet('arey-checkbox', `
 .arey-check:hover .arey-check__box{border-color:var(--accent-solid)}
 .arey-check:active .arey-check__box{transform:scale(var(--press-scale))}
 .arey-check__box::after{content:"";position:absolute;left:5px;top:2px;width:5px;height:9px;
-  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) scale(.4);opacity:0;
+  border:solid var(--accent-text-on);border-width:0 2px 2px 0;transform:rotate(45deg) scale(.4);opacity:0;
   transition:opacity var(--duration-fast) var(--ease-out),transform var(--duration-fast) var(--ease-spring)}
 .arey-check input:checked + .arey-check__box{background:var(--accent-solid);border-color:var(--accent-solid)}
 .arey-check input:checked + .arey-check__box::after{opacity:1;transform:rotate(45deg) scale(1)}
