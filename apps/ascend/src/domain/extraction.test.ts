@@ -79,4 +79,16 @@ describe('evaluateExtraction', () => {
     const verdict = evaluateExtraction(extraction({ deadlineAt: '2099-01-01T00:00:00Z' }), context);
     expect(verdict.outcome).toBe('needs_review');
   });
+
+  it('discards a message the classifier says is not job related', () => {
+    expect(evaluateExtraction(extraction({ isJobRelated: false }), context).outcome).toBe('discarded');
+  });
+
+  it('routes model-reported ambiguity to review', () => {
+    expect(evaluateExtraction(extraction({ reason: 'The date could mean either Friday.' }), context).outcome).toBe('needs_review');
+  });
+
+  it('routes a deadline before the message to review', () => {
+    expect(evaluateExtraction(extraction({ deadlineAt: '2026-07-01T09:00:00Z' }), context).outcome).toBe('needs_review');
+  });
 });

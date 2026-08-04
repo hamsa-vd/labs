@@ -3,7 +3,10 @@
 Invite-only job-application tracker. Reads Gmail read-only, classifies with a
 local model on a Mac Mini, and keeps an append-only event log per application.
 
-Scaffolding only; production UI is not implemented. Design reference:
+The production foundation, authenticated tracker UI, public invite flow,
+classification pipeline, Gmail worker, and versioned API are implemented. The
+remaining launch work is environment integration and acceptance testing against
+real Cloudflare, Google, Postgres, Ollama, and Mac Mini services. Design reference:
 `archive/ascend-architecture.md`, and section numbers below point into it.
 `archive/index.html` is the Claude Design prototype, a behavioural and visual
 reference rather than production code.
@@ -21,30 +24,39 @@ reference rather than production code.
 
 ## Design system
 
-Components come from `@hamsa-designs/arey`. Two things are load-bearing:
-
-- `next.config.ts` sets `transpilePackages`. The package exports raw `.jsx` from
-  `node_modules` and SWC skips `node_modules` by default, so without it the
-  first component import fails the build.
-- `pnpm design-system:css` extracts component CSS to
-  `src/generated/arey-components.css`, which the root layout imports. arey
-  injects that CSS at runtime and its injector no-ops on the server, so without
-  the extraction step SSR ships unstyled HTML that restyles on hydration (§12.1).
-  Runs automatically on `predev` and `prebuild`.
+Design-system usage is centralized in `@labs/design` (`packages/typescript/design`),
+which wraps `@hamsa-designs/arey` behind the `arey` adapter — `@labs/design/arey`
+(components + `ThemeToggle`) and `@labs/design/arey.css` (tokens, vendored icon
+fonts, and component CSS, pre-harvested at `@labs/design`'s own build time so SSR
+always renders styled HTML; see `packages/typescript/design/scripts/build-arey-css.ts`).
+Color-mode switching (`data-theme` on `<html>`, persistence, pre-hydration bootstrap)
+is DS-agnostic core in `@labs/design`, rendered via `<ThemeScript adapter={areyAdapter}
+storageKey="ascend-theme" />` in `app/layout.tsx`. Both packages ship compiled JS, so
+no `transpilePackages` entry is needed.
 
 ## Commands
 
 ```sh
-pnpm dev                  # extracts design-system CSS, then next dev
+pnpm dev                  # next dev
 pnpm check                # lint, typecheck, test
 pnpm sync:backfill        # first import for an account
-pnpm sync:incremental     # history-based delta; launchd runs this every 10 min
+pnpm sync:incremental     # dispatches jobs every minute; accounts become due after 10 min
 pnpm eval                 # score the golden set in evals/fixtures
-pnpm design-system:css    # regenerate component CSS after an arey upgrade
+pnpm audit:persistence    # fail if bodies, evidence text, or plaintext token columns exist
 ```
 
 Copy `.env.example` to `.env.local` only when integration work begins. Never
 commit credentials or Gmail content.
+
+## Launch gates
+
+- Apply `0001_initial_schema.sql` and `0002_production_foundation.sql` to the
+  production database, then run `pnpm audit:persistence`.
+- Run the opt-in Postgres cases with `TEST_DATABASE_URL=... pnpm test`.
+- Set `ASCEND_PRIVATE_GOLDEN_SET` to the gitignored, Mac-Mini-only real fixture
+  set and keep `pnpm eval` green at the documented release thresholds.
+- Complete and record the Google OAuth day-eight refresh-token experiment before
+  granting access to real users.
 
 ## Where the risk is
 

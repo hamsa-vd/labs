@@ -4,11 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "design-system:css": "tsx scripts/extract-design-system-css.ts",
-    "predev": "pnpm design-system:css",
     "dev": "next dev",
-    "prebuild": "pnpm design-system:css",
     "build": "next build",
+    "postbuild": "bash deployment/prepare-standalone.sh",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -18,21 +16,27 @@
     "sync:incremental": "tsx scripts/sync-incremental.ts",
     "sync:backfill": "tsx scripts/sync-backfill.ts",
     "eval": "tsx scripts/evaluate.ts",
-    "retention": "tsx scripts/retention.ts"
+    "retention": "tsx scripts/retention.ts",
+    "audit:persistence": "tsx scripts/audit-persistence.ts"
   },
   "dependencies": {
-    "@hamsa-designs/arey": "^1.0.1",
+    "@labs/design": "workspace:*",
+    "cheerio": "^1.2.0",
+    "google-auth-library": "^11.0.0",
+    "googleapis": "^173.0.0",
     "jose": "^6.1.0",
     "next": "16.2.12",
+    "pg": "^8.22.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
     "zod": "4.4.3"
   },
   "devDependencies": {
     "@types/node": "26.1.2",
+    "@types/pg": "^8.20.3",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
-    "esbuild": "0.28.1",
     "eslint": "9.39.5",
     "eslint-config-next": "16.2.12",
     "tsx": "4.23.5",

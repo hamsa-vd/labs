@@ -1,0 +1,46 @@
+{
+  "name": "@labs/design",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Centralized design-system usage and color-mode switching for labs apps.",
+  "type": "module",
+  "sideEffects": [
+    "./dist/arey.css"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./arey": {
+      "types": "./dist/adapters/arey/index.d.ts",
+      "default": "./dist/adapters/arey/index.js"
+    },
+    "./arey.css": "./dist/arey.css"
+  },
+  "scripts": {
+    "build": "tsup && tsx scripts/build-arey-css.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "dependencies": {
+    "@hamsa-designs/arey": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "esbuild": "^0.28.1",
+    "react": "^19.2.8",
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.5",
+    "typescript": "^5.9.3"
+  }
+}

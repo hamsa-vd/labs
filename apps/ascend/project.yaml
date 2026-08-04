@@ -8,12 +8,11 @@ clients:
   - responsive-web
   - installable-pwa
 design_system:
-  package: "@hamsa-designs/arey"
-  # Ships raw .jsx from node_modules; SWC skips node_modules by default.
-  requires_transpile_packages: true
-  # Component CSS is injected at runtime and no-ops on the server, so it is
-  # harvested at build time instead. See architecture 12.1.
-  css_extraction: pnpm design-system:css
+  package: "@labs/design"
+  adapter: arey
+  # @labs/design pre-harvests arey's runtime-injected component CSS at its own
+  # build time (packages/typescript/design/scripts/build-arey-css.ts) and ships
+  # one static @labs/design/arey.css — no per-app build step needed.
 deployment:
   target: mac-mini
   process_manager: launchd
@@ -24,6 +23,10 @@ deployment:
       - /privacy
       - /status
       - /api/v1/invite-requests
+      # Theme bootstrap script (@labs/design), needed on the bypassed public
+      # pages above too — must not sit behind Access or anonymous visitors
+      # get no dark/light switching.
+      - /api/labs-theme
     allow: everything-else
 commands:
   dev: pnpm dev
@@ -31,4 +34,3 @@ commands:
   test: pnpm test
   build: pnpm build
   eval: pnpm eval
-  design_system_css: pnpm design-system:css

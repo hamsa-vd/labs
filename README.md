@@ -17,7 +17,7 @@ Each application owns its runtime, dependencies, tests, and deployment configura
 
 | Project | Stack | Status | Purpose |
 | --- | --- | --- | --- |
-| `apps/ascend` | Next.js, TypeScript | Scaffold | Private job-application tracker |
+| `apps/ascend` | Next.js, TypeScript | Integration | Private job-application tracker |
 
 ## Commands
 

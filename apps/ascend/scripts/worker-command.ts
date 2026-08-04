@@ -1,3 +1,5 @@
+import { safeOperationalError } from '@/security/safe-error';
+
 export async function runWorkerCommand(name: string, operation: () => Promise<void>): Promise<void> {
   const startedAt = new Date();
   console.log(JSON.stringify({ event: 'worker.started', name, startedAt: startedAt.toISOString() }));
@@ -9,12 +11,8 @@ export async function runWorkerCommand(name: string, operation: () => Promise<vo
     console.error(JSON.stringify({
       event: 'worker.failed',
       name,
-      message: error instanceof Error ? error.message : String(error),
+      error: safeOperationalError(error),
     }));
     process.exitCode = 1;
   }
-}
-
-export function notImplemented(name: string): Promise<void> {
-  return Promise.reject(new Error(`${name} is scaffolded but not implemented`));
 }

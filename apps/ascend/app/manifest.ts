@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'Ascend',
     short_name: 'Ascend',
     description: 'Private job-application tracking from Gmail-derived events.',
-    start_url: '/overview',
+    start_url: '/',
     display: 'standalone',
     background_color: '#000000',
     theme_color: '#000000',

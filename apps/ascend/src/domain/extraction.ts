@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { applicationEventTypes } from './application-event';
+import { applicationEventTypes, isApplicationStatus } from './application-event';
 
 /**
  * The contract the local model must satisfy. Passed to Ollama as a JSON schema
@@ -74,6 +74,9 @@ function timestampFailures(label: string, value: string | null, now: Date): stri
   const horizon = new Date(now);
   horizon.setFullYear(horizon.getFullYear() + MAX_FUTURE_YEARS);
   if (parsed > horizon.getTime()) return [`${label} is more than ${MAX_FUTURE_YEARS} years in the future`];
+  if ((label === 'scheduledAt' || label === 'deadlineAt') && parsed < now.getTime() - 24 * 60 * 60 * 1000) {
+    return [`${label} is implausibly earlier than the message`];
+  }
   return [];
 }
 
@@ -92,6 +95,10 @@ export function evaluateExtraction(
   const hard: string[] = [];
   const soft: string[] = [];
 
+  if (!extraction.isJobRelated || !isApplicationStatus(extraction.eventType)) {
+    return { outcome: 'discarded', failures: ['message does not represent an application status event'] };
+  }
+
   if (!extraction.evidence || !context.cleanedText.includes(extraction.evidence)) {
     hard.push('evidence quote does not appear in the source');
   }
@@ -103,6 +110,10 @@ export function evaluateExtraction(
   soft.push(...nameFailures('roleTitle', extraction.roleTitle));
   soft.push(...timestampFailures('scheduledAt', extraction.scheduledAt, now));
   soft.push(...timestampFailures('deadlineAt', extraction.deadlineAt, now));
+  soft.push(...timestampFailures('occurredAtHint', extraction.occurredAtHint, now));
+
+  if (!extraction.company) soft.push('company is missing');
+  if (extraction.reason.trim()) soft.push('classifier reported ambiguity');
 
   if (extraction.reason.length > MAX_REASON_LENGTH) {
     soft.push(`reason exceeds ${MAX_REASON_LENGTH} characters`);

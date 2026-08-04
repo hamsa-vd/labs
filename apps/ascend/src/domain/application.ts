@@ -19,4 +19,19 @@ export interface Application {
   currentStatus: ApplicationStatus;
   statusAsOf: Date;
   archived: boolean;
+  origin: ApplicationOrigin;
+  jobUrl: string | null;
+  note: string | null;
+}
+
+export const applicationOrigins = ['gmail', 'manual'] as const;
+export type ApplicationOrigin = (typeof applicationOrigins)[number];
+
+export const applicationStages = ['applied', 'acknowledged', 'assessment', 'interview', 'offer'] as const;
+export type ApplicationStage = (typeof applicationStages)[number];
+
+export function applicationStage(status: ApplicationStatus): ApplicationStage | null {
+  if (status === 'interview_invite' || status === 'interview_scheduled') return 'interview';
+  if (status === 'rejected' || status === 'withdrawn') return null;
+  return status;
 }

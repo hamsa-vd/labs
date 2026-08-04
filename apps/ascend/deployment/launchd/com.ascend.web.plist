@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key> <string>com.ascend.web</string>
+  <key>WorkingDirectory</key> <string>/Users/CHANGEME/repos/labs/apps/ascend</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/env</string><string>node</string><string>.next/standalone/apps/ascend/server.js</string>
+  </array>
+  <key>RunAtLoad</key> <true/>
+  <key>KeepAlive</key> <true/>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key> <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>NODE_ENV</key> <string>production</string>
+    <key>HOSTNAME</key> <string>127.0.0.1</string>
+    <key>PORT</key> <string>3000</string>
+  </dict>
+  <key>StandardOutPath</key> <string>/Users/CHANGEME/Library/Logs/ascend-web.log</string>
+  <key>StandardErrorPath</key> <string>/Users/CHANGEME/Library/Logs/ascend-web.error.log</string>
+</dict>
+</plist>

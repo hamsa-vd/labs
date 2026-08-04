@@ -1,8 +1,8 @@
-import '@hamsa-designs/arey/styles.css';
-// Component CSS, harvested at build time so the server renders styled HTML.
-// arey injects it at runtime otherwise, which means SSR ships unstyled markup.
-// See architecture §12.1 and scripts/extract-design-system-css.ts.
-import '@/generated/arey-components.css';
+// arey tokens, fonts, and component CSS — pre-harvested by @labs/design so SSR
+// renders styled HTML. See packages/typescript/design/scripts/build-arey-css.ts.
+import '@labs/design/arey.css';
+import './ascend.css';
+import { ThemeScript } from '@labs/design';
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 
@@ -23,7 +23,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en" data-theme="dark">
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
+      <head>
+        {/* Required before hydration so the global theme is applied without Next's client stream. */}
+        <ThemeScript src="/api/labs-theme" />
+      </head>
       <body>{children}</body>
     </html>
   );

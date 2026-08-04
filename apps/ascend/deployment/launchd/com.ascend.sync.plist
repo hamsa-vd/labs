@@ -13,7 +13,8 @@
     <string>-lc</string>
     <string>cd /Users/CHANGEME/repos/labs/apps/ascend &amp;&amp; pnpm sync:incremental</string>
   </array>
-  <key>StartInterval</key>      <integer>600</integer>
+  <!-- One-minute dispatcher; account due times remain ten minutes in Postgres. -->
+  <key>StartInterval</key>      <integer>60</integer>
   <key>RunAtLoad</key>          <true/>
   <key>StandardOutPath</key>    <string>/Users/CHANGEME/Library/Logs/ascend-sync.log</string>
   <key>StandardErrorPath</key>  <string>/Users/CHANGEME/Library/Logs/ascend-sync.error.log</string>

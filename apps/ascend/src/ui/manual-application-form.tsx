@@ -1,0 +1,11 @@
+'use client';
+import { Button, Card } from '@labs/design/arey';
+import { FormEvent, useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+export function ManualApplicationForm() {
+  const [open,setOpen]=useState(false); const [loading,setLoading]=useState(false); const router=useRouter();
+  async function submit(event:FormEvent<HTMLFormElement>){event.preventDefault();setLoading(true);const form=new FormData(event.currentTarget);const response=await fetch('/api/v1/applications',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({company:form.get('company'),role:form.get('role'),source:form.get('source'),appliedAt:form.get('appliedAt'),status:form.get('status'),jobUrl:form.get('jobUrl')||null,note:form.get('note')||null})});setLoading(false);if(response.ok){setOpen(false);router.refresh();}}
+  if(!open)return <Button variant="primary" iconLeft="plus" onClick={()=>setOpen(true)}>Add application</Button>;
+  return <Card title="Add application" description="For referrals, LinkedIn conversations, and portals that send no useful mail"><form className="ascend-form" onSubmit={submit}><div className="ascend-form-grid"><label className="ascend-label">Company<input name="company" required maxLength={80}/></label><label className="ascend-label">Role<input name="role" required maxLength={80}/></label><label className="ascend-label">Source<input name="source" defaultValue="manual" required maxLength={40}/></label><label className="ascend-label">Applied at<input name="appliedAt" type="datetime-local" required/></label><label className="ascend-label">Status<select name="status" defaultValue="applied"><option value="applied">Applied</option><option value="acknowledged">Acknowledged</option><option value="assessment">Assessment</option><option value="interview_invite">Interview</option><option value="offer">Offer</option></select></label><label className="ascend-label">Job URL<input name="jobUrl" type="url"/></label></div><label className="ascend-label">Note<textarea name="note" maxLength={1000}/></label><div className="ascend-actions"><Button type="button" onClick={()=>setOpen(false)}>Cancel</Button><Button type="submit" variant="primary" loading={loading}>Save application</Button></div></form></Card>;
+}
