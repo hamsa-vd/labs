@@ -44,24 +44,26 @@ export default async function ApplicationsPage({ searchParams }: { searchParams:
         <div><div className="ascend-eyebrow">{page.applications.length} on this page</div><h1 className="ascend-title">Applications</h1></div>
         <ManualApplicationForm />
       </div>
-      <Card title="Filters">
-        <form className="ascend-filter-form" method="get">
-          <label className="ascend-label">Status
-            <select name="status" defaultValue={status ?? ''}>
-              <option value="">All statuses</option>
-              {applicationStatuses.map((value) => <option value={value} key={value}>{value.replace('_', ' ')}</option>)}
-            </select>
-          </label>
-          <label className="ascend-label">Source<input name="source" defaultValue={params.source ?? ''} placeholder="greenhouse" /></label>
-          <label className="ascend-check"><input name="waitingOnUser" type="checkbox" value="true" defaultChecked={params.waitingOnUser === 'true'} /> Waiting on you</label>
-          <label className="ascend-check"><input name="includeClosed" type="checkbox" value="true" defaultChecked={includeClosed} /> Include closed</label>
-          <Button type="submit">Apply filters</Button>
-          <Link className="ascend-link-button" href="/applications">Clear</Link>
-        </form>
-      </Card>
-      <Card padded={false} variant="flat">
-        {page.applications.length ? <ApplicationsTable applications={page.applications} /> : <div className="ascend-empty">No applications match these filters.</div>}
-      </Card>
+      <div className="ascend-stack">
+        <Card title="Filters">
+          <form className="ascend-filter-form" method="get">
+            <label className="ascend-label">Status
+              <select name="status" defaultValue={status ?? ''}>
+                <option value="">All statuses</option>
+                {applicationStatuses.map((value) => <option value={value} key={value}>{value.replace('_', ' ')}</option>)}
+              </select>
+            </label>
+            <label className="ascend-label">Source<input name="source" defaultValue={params.source ?? ''} placeholder="greenhouse" /></label>
+            <label className="ascend-check"><input name="waitingOnUser" type="checkbox" value="true" defaultChecked={params.waitingOnUser === 'true'} /> Waiting on you</label>
+            <label className="ascend-check"><input name="includeClosed" type="checkbox" value="true" defaultChecked={includeClosed} /> Include closed</label>
+            <Button type="submit">Apply filters</Button>
+            <Link className="ascend-link-button" href="/applications">Clear</Link>
+          </form>
+        </Card>
+        <Card padded={false} variant="flat">
+          {page.applications.length ? <ApplicationsTable applications={page.applications} /> : <div className="ascend-empty">No applications match these filters.</div>}
+        </Card>
+      </div>
       {page.nextCursor && <Link className="ascend-link-button" href={`/applications?${next}`}>Next page</Link>}
     </main>
   );

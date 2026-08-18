@@ -3,10 +3,13 @@ import Link from 'next/link';
 import { decodeCursor, encodeCursor } from '@/application/cursor';
 import { currentUser } from '@/auth/access';
 import { databaseConfigured, query } from '@/infrastructure/database';
+import { SyncRunsRefresh } from '@/ui/sync-runs-refresh';
 
 interface SyncRun {
   id: string; mode: string; status: 'success' | 'recovered' | 'failed'; started_at: Date; finished_at: Date | null;
-  messages_seen: number | null; llm_calls: number | null; messages_failed: number | null; note: string | null; error: string | null;
+  messages_discovered: number | null; messages_seen: number | null; candidates_found: number | null; llm_calls: number | null;
+  events_created: number | null; messages_failed: number | null; duration_ms: number | null; failure_stage: string | null;
+  note: string | null; error: string | null;
 }
 
 export default async function SyncRunsPage({ searchParams }: { searchParams: Promise<{ cursor?: string }> }) {
@@ -26,9 +29,10 @@ export default async function SyncRunsPage({ searchParams }: { searchParams: Pro
 
   return (
     <main className="ascend-page">
+      <SyncRunsRefresh />
       <div className="ascend-page-head"><div><div className="ascend-eyebrow">Accounts checked every 10 minutes</div><h1 className="ascend-title">Sync runs</h1></div></div>
       <Card padded={false} variant="flat">
-        {runs.length ? <Table><thead><TableRow><TableHead>Status</TableHead><TableHead>Mode</TableHead><TableHead>Started</TableHead><TableHead align="right">Seen / model / failed</TableHead><TableHead>Details</TableHead></TableRow></thead><tbody>{runs.map((run) => <TableRow key={run.id}><TableCell><Badge tone={run.status === 'success' ? 'success' : run.status === 'recovered' ? 'warning' : 'danger'} dot>{run.status}</Badge></TableCell><TableCell mono>{run.mode}</TableCell><TableCell mono>{run.started_at.toLocaleString()}</TableCell><TableCell mono align="right">{run.messages_seen ?? 0} / {run.llm_calls ?? 0} / {run.messages_failed ?? 0}</TableCell><TableCell>{run.error ?? run.note ?? '—'}</TableCell></TableRow>)}</tbody></Table> : <div className="ascend-empty">No sync runs yet.</div>}
+        {runs.length ? <Table><thead><TableRow><TableHead>Status</TableHead><TableHead>Mode</TableHead><TableHead>Started</TableHead><TableHead>Mail flow</TableHead><TableHead>Details</TableHead></TableRow></thead><tbody>{runs.map((run) => <TableRow key={run.id}><TableCell><Badge tone={run.status === 'success' ? 'success' : run.status === 'recovered' ? 'warning' : 'danger'} dot>{run.status}</Badge></TableCell><TableCell mono>{run.mode}</TableCell><TableCell mono>{run.started_at.toLocaleString()}</TableCell><TableCell mono>{run.messages_discovered ?? 0} found<br />{run.messages_seen ?? 0} scanned<br />{run.candidates_found ?? 0} candidates<br />{run.llm_calls ?? 0} model · {run.events_created ?? 0} events<br />{run.messages_failed ?? 0} failed</TableCell><TableCell>{run.error ?? run.note ?? '—'}{run.failure_stage && <><br /><span className="ascend-meta">Stage: {run.failure_stage}</span></>}{run.duration_ms !== null && <><br /><span className="ascend-meta">Duration: {run.duration_ms}ms</span></>}</TableCell></TableRow>)}</tbody></Table> : <div className="ascend-empty">No sync runs yet.</div>}
       </Card>
       {nextCursor && <Link className="ascend-link-button" href={`/sync-runs?cursor=${encodeURIComponent(nextCursor)}`}>Next page</Link>}
     </main>

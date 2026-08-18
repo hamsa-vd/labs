@@ -13,7 +13,7 @@ export function safeOperationalError(error: unknown): string {
   if (isCredentialFailure(error)) return 'oauth_refresh_failed';
   const status = typeof error === 'object' && error && 'code' in error ? Number(error.code) : null;
   if (status && Number.isFinite(status)) return `upstream_http_${status}`;
-  if (error instanceof SyntaxError) return 'classifier_invalid_json';
+  if (error instanceof Error && error.name === 'ClassifierJsonError') return 'classifier_invalid_json';
   if (error instanceof Error && error.name === 'ZodError') return 'classifier_schema_invalid';
   if (error instanceof Error && error.name === 'TimeoutError') return 'upstream_timeout';
   const message = errorMessage(error);

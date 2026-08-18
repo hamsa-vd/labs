@@ -11,6 +11,27 @@ describe('prefilterMessage', () => {
     expect(prefilterMessage({ fromAddress: 'jobs@example.com', subject: 'Next steps for your application' }).shouldClassify).toBe(true);
   });
 
+  it('allows plain interview subjects', () => {
+    expect(prefilterMessage({ fromAddress: 'recruiter@example.com', subject: 'Interview at Northwind' }).shouldClassify).toBe(true);
+  });
+
+  it('allows rejection and application-update wording', () => {
+    for (const subject of [
+      'Unfortunately, we will not be moving forward',
+      'Update regarding your application',
+      'Application status update',
+    ]) {
+      expect(prefilterMessage({ fromAddress: 'careers@example.com', subject }).shouldClassify).toBe(true);
+    }
+  });
+
+  it('recognizes recruiter and ATS senders such as Multiverse without a matching subject', () => {
+    expect(prefilterMessage({ fromAddress: 'talent@multiverse.io', subject: 'Hello' })).toMatchObject({
+      shouldClassify: true,
+      source: 'multiverse',
+    });
+  });
+
   it('hard-rejects LinkedIn job alerts and newsletters', () => {
     expect(prefilterMessage({ fromAddress: 'noreply@linkedin.com', subject: 'Your job alert' }).score).toBe(0);
     expect(prefilterMessage({ fromAddress: 'hello@example.com', subject: 'Weekly news', hasListUnsubscribe: true }).score).toBe(0);

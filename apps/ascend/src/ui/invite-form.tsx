@@ -3,6 +3,7 @@
 import { Button, Icon } from '@labs/design/arey';
 import Script from 'next/script';
 import { FormEvent, useEffect, useRef, useState } from 'react';
+import { accessLoginHref } from './public-header';
 
 interface TurnstileApi {
   render(container: HTMLElement, options: Record<string, unknown>): string;
@@ -93,7 +94,7 @@ export function InviteForm({ inviteOpen, onInviteOpenChange }: InviteFormProps) 
         ) : (
           <>
             <div className="ascend-login-card-head"><div className="ascend-login-card-title">Sign in</div><div className="ascend-login-card-description">Your email has to be on the allowlist. If it is, one tap and you are in — there is no password to forget.</div></div>
-            <Button variant="primary" block iconLeft="google-logo" onClick={() => { window.location.href = '/overview'; }}>Continue with Google</Button>
+            <Button variant="primary" block iconLeft="google-logo" onClick={() => { window.location.href = accessLoginHref; }}>Continue with Google</Button>
             <div className="ascend-login-invite-link"><span>Not on the list yet?</span><button type="button" onClick={() => setRequestOpen(true)}>Request an invite</button></div>
             <div className="ascend-login-notes">{[
               ['eye', 'Read-only access to Gmail. Ascend never sends, moves, or deletes anything.'],

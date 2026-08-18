@@ -10,18 +10,22 @@ import { gmailForEncryptedToken, messageHtml } from '@/infrastructure/gmail-clie
 import { OllamaClassifier } from '@/infrastructure/ollama-classifier';
 import { isCredentialFailure, safeOperationalError } from '@/security/safe-error';
 
-const BACKFILL_QUERY = `newer_than:2y -in:chats -in:spam (
-  from:(greenhouse.io OR lever.co OR ashbyhq.com OR myworkday.com OR icims.com OR smartrecruiters.com OR workable.com OR teamtailor.com OR jobvite.com OR taleo.net OR successfactors.com OR breezy.hr OR recruitee.com OR pinpointhq.com OR bamboohr.com OR linkedin.com OR indeed.com OR otta.com)
-  OR subject:("thank you for applying" OR "your application" OR "application received" OR "interview" OR "we regret" OR "moving forward" OR "next steps" OR "assessment" OR "offer")
+const BACKFILL_QUERY = `-in:chats -in:spam (
+  from:(greenhouse.io OR lever.co OR ashbyhq.com OR myworkday.com OR icims.com OR smartrecruiters.com OR workable.com OR teamtailor.com OR jobvite.com OR taleo.net OR successfactors.com OR breezy.hr OR recruitee.com OR pinpointhq.com OR bamboohr.com OR linkedin.com OR indeed.com OR otta.com OR multiverse.io OR multiverse.com)
+  OR subject:("thank you for applying" OR "your application" OR "application received" OR "application update" OR "application status" OR "update on your application" OR "interview" OR "interview invitation" OR "we regret" OR "unfortunately" OR "not moving forward" OR "moving forward" OR "next steps" OR "assessment" OR "offer")
 )`;
 
 interface AccountRow {
   id: string; user_id: string; gmail_address: string; refresh_token_ciphertext: Buffer;
   refresh_token_nonce: Buffer; key_version: number; history_id: string | null;
-  last_synced_at: Date | null; timezone: string;
+  last_synced_at: Date | null; timezone: string; backfill_days: number;
 }
 
 interface Counts { scanned: number; candidates: number; events: number; llmCalls: number; failed: number }
+
+function logEvent(event: string, fields: Record<string, unknown> = {}): void {
+  console.log(JSON.stringify({ event, at: new Date().toISOString(), ...fields }));
+}
 
 function header(message: gmail_v1.Schema$Message, name: string): string {
   return message.payload?.headers?.find((item) => item.name?.toLowerCase() === name.toLowerCase())?.value ?? '';
@@ -114,6 +118,7 @@ async function processMessage(gmail: gmail_v1.Gmail, account: AccountRow, gmailM
   const cleaned = sanitizeMessageHtml(messageHtml(full.data.payload));
   const classifier = new OllamaClassifier();
   const started = Date.now();
+  logEvent('sync.classifier.started', { model: process.env.OLLAMA_MODEL ?? 'qwen3:8b', candidateNumber: counts.candidates });
   const extraction = await classifier.classify({ cleanedText: cleaned.text, subject, fromAddress: sender, receivedAt, timezone: account.timezone });
   counts.llmCalls += 1;
   const verdict = evaluateExtraction(extraction, {
@@ -122,6 +127,12 @@ async function processMessage(gmail: gmail_v1.Gmail, account: AccountRow, gmailM
     now: receivedAt,
   });
   const location = locateEvidence(cleaned.text, extraction.evidence);
+  logEvent('sync.classifier.completed', {
+    model: process.env.OLLAMA_MODEL ?? 'qwen3:8b',
+    latencyMs: Date.now() - started,
+    outcome: verdict.outcome,
+    evidenceLocated: Boolean(location),
+  });
 
   await transaction(async (client) => {
     await client.query(
@@ -199,31 +210,41 @@ export async function runSyncJob(jobId: string): Promise<void> {
   );
   const job = jobs.rows[0];
   if (!job) return;
+  const jobStarted = Date.now();
+  logEvent('sync.job.started', { jobId: job.id, requestedMode: job.mode });
   const client = await database().connect();
   const lock = await client.query<{ locked: boolean }>(`select pg_try_advisory_lock(hashtext($1)) as locked`, [job.account_id]);
   if (!lock.rows[0]?.locked) {
+    logEvent('sync.job.deferred', { jobId: job.id, reason: 'account_lock_busy' });
     await client.release();
     await database().query(`update sync_jobs set status='queued', started_at=null where id=$1`, [job.id]);
     return;
   }
   const counts: Counts = { scanned: 0, candidates: 0, events: 0, llmCalls: 0, failed: 0 };
+  let stage = 'load_account';
   try {
     const accounts = await database().query<AccountRow>(
       `select ga.*, u.timezone from gmail_accounts ga join app_users u on u.id=ga.user_id where ga.id=$1`, [job.account_id],
     );
     const account = accounts.rows[0];
     if (!account) throw new Error('Gmail account not found');
+    stage = 'decrypt_gmail_token';
     const gmail = gmailForEncryptedToken({ ciphertext: account.refresh_token_ciphertext, nonce: account.refresh_token_nonce, keyVersion: account.key_version });
     let mode = job.mode;
     let ids: string[];
     let nextHistoryId: string | null = account.history_id;
     try {
+      stage = 'discover_messages';
+      logEvent('sync.discovery.started', { jobId: job.id, requestedMode: mode, hasHistoryCursor: Boolean(account.history_id) });
       if (mode === 'incremental' && account.history_id) {
         const history = await historyIds(gmail, account.history_id);
         ids = history.ids; nextHistoryId = history.historyId ?? account.history_id;
       } else {
         mode = 'full';
-        const backfill = await fullBackfill(gmail, account.last_synced_at);
+        const after = job.mode === 'full'
+          ? new Date(Date.now() - account.backfill_days * 24 * 60 * 60 * 1000)
+          : account.last_synced_at;
+        const backfill = await fullBackfill(gmail, after);
         ids = backfill.ids; nextHistoryId = backfill.historyId ?? nextHistoryId;
       }
     } catch (error) {
@@ -233,8 +254,10 @@ export async function runSyncJob(jobId: string): Promise<void> {
         ids = backfill.ids; nextHistoryId = backfill.historyId ?? nextHistoryId;
       } else throw error;
     }
+    logEvent('sync.discovery.completed', { jobId: job.id, mode, messageCount: ids.length, hasHistoryCursor: Boolean(nextHistoryId) });
     for (const id of ids) {
       try {
+        stage = 'process_message';
         await processMessage(gmail, account, id, counts);
       } catch (error) {
         // One malformed message must not wedge the whole account's sync forever. Mark it
@@ -242,6 +265,7 @@ export async function runSyncJob(jobId: string): Promise<void> {
         // findable and re-drivable — this may be the first write for this message if it
         // failed before processMessage's own raw_messages upsert ran.
         counts.failed += 1;
+        logEvent('sync.message.failed', { jobId: job.id, error: safeOperationalError(error), failedCount: counts.failed });
         await database().query(
           `insert into raw_messages(account_id, gmail_message_id, gmail_thread_id, from_address, from_domain,
              internal_date, prefilter_score, prefilter_reasons, source, processing_error, processing_failed_at, processed_at)
@@ -256,6 +280,9 @@ export async function runSyncJob(jobId: string): Promise<void> {
         `update sync_jobs set messages_scanned=$2, candidates_found=$3, events_created=$4 where id=$1`,
         [job.id, counts.scanned, counts.candidates, counts.events],
       );
+      if (counts.scanned % 25 === 0 || counts.scanned === ids.length) {
+        logEvent('sync.progress', { jobId: job.id, mode, scanned: counts.scanned, total: ids.length, candidates: counts.candidates, llmCalls: counts.llmCalls, events: counts.events, failed: counts.failed });
+      }
     }
     await transaction(async (tx) => {
       await tx.query(
@@ -264,19 +291,23 @@ export async function runSyncJob(jobId: string): Promise<void> {
       );
       await tx.query(`update sync_jobs set status='completed',finished_at=now() where id=$1`, [job.id]);
       await tx.query(
-        `insert into sync_runs(account_id,mode,status,started_at,finished_at,messages_seen,llm_calls,messages_failed,note)
-         values ($1,$2,$3,$4,now(),$5,$6,$7,$8)`,
-        [account.id, mode, mode !== job.mode ? 'recovered' : 'success', job.started_at, counts.scanned, counts.llmCalls, counts.failed,
+      `insert into sync_runs(account_id,mode,status,started_at,finished_at,messages_discovered,messages_seen,candidates_found,llm_calls,events_created,messages_failed,duration_ms,note)
+         values ($1,$2,$3,$4,now(),$5,$6,$7,$8,$9,$10,$11,$12)`,
+        [account.id, mode, mode !== job.mode ? 'recovered' : 'success', job.started_at, ids.length, counts.scanned, counts.candidates,
+          counts.llmCalls, counts.events, counts.failed, Date.now() - jobStarted,
           mode !== job.mode ? 'stale historyId recovered with bounded backfill' : 'historyId advanced'],
       );
+      logEvent('sync.job.completed', { jobId: job.id, mode, scanned: counts.scanned, candidates: counts.candidates, llmCalls: counts.llmCalls, events: counts.events, failed: counts.failed, durationMs: Date.now() - jobStarted });
     });
   } catch (error) {
     const message = safeOperationalError(error);
+    logEvent('sync.job.failed', { jobId: job.id, requestedMode: job.mode, stage, error: message, scanned: counts.scanned, candidates: counts.candidates, llmCalls: counts.llmCalls, failed: counts.failed, durationMs: Date.now() - jobStarted });
     await database().query(`update sync_jobs set status='failed',finished_at=now(),error=$2 where id=$1`, [job.id, message]);
     await database().query(
-      `insert into sync_runs(account_id,mode,status,started_at,finished_at,messages_seen,llm_calls,messages_failed,error)
-       values ($1,$2,'failed',$3,now(),$4,$5,$6,$7)`,
-      [job.account_id, job.mode, job.started_at, counts.scanned, counts.llmCalls, counts.failed, message],
+      `insert into sync_runs(account_id,mode,status,started_at,finished_at,messages_discovered,messages_seen,candidates_found,llm_calls,events_created,messages_failed,duration_ms,failure_stage,error)
+       values ($1,$2,'failed',$3,now(),$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+      [job.account_id, job.mode, job.started_at, 0, counts.scanned, counts.candidates, counts.llmCalls, counts.events, counts.failed,
+        Date.now() - jobStarted, stage, message],
     );
     if (isCredentialFailure(error)) await database().query(`update gmail_accounts set status='needs_reauth' where id=$1`, [job.account_id]);
     throw error;
@@ -287,6 +318,7 @@ export async function runSyncJob(jobId: string): Promise<void> {
 }
 
 export async function runWorkerCycle(): Promise<number> {
+  const cycleStarted = Date.now();
   await database().query(
     `insert into worker_heartbeats(worker_name,heartbeat_at) values ('gmail-sync',now())
      on conflict (worker_name) do update set heartbeat_at=excluded.heartbeat_at`,
@@ -300,6 +332,7 @@ export async function runWorkerCycle(): Promise<number> {
   const queued = await database().query<{ id: string }>(
     `select id from sync_jobs where status='queued' order by requested_at for update skip locked limit 10`,
   );
+  logEvent('sync.worker.queue', { queued: queued.rowCount ?? 0 });
   // Each failure is already recorded in sync_jobs/sync_runs by runSyncJob; swallow it here
   // so one account's failure doesn't skip every other account or the heartbeat below.
   for (const job of queued.rows) await runSyncJob(job.id).catch(() => undefined);
@@ -307,5 +340,6 @@ export async function runWorkerCycle(): Promise<number> {
     `update worker_heartbeats set heartbeat_at=now(),jobs_processed=jobs_processed+$1 where worker_name='gmail-sync'`,
     [queued.rowCount ?? 0],
   );
+  logEvent('sync.worker.cycle.completed', { jobsProcessed: queued.rowCount ?? 0, durationMs: Date.now() - cycleStarted });
   return queued.rowCount ?? 0;
 }

@@ -7,6 +7,7 @@ const ATS_DOMAINS = new Map<string, string>([
   ['teamtailor.com', 'teamtailor'], ['jobvite.com', 'jobvite'], ['recruitee.com', 'recruitee'],
   ['personio.de', 'personio'], ['pinpointhq.com', 'pinpoint'], ['bamboohr.com', 'bamboohr'],
   ['successfactors.com', 'successfactors'], ['taleo.net', 'taleo'], ['avature.net', 'avature'],
+  ['multiverse.io', 'multiverse'], ['multiverse.com', 'multiverse'],
 ]);
 
 const AGGREGATORS = new Map<string, string>([
@@ -17,11 +18,14 @@ const AGGREGATORS = new Map<string, string>([
 
 const SUBJECT_PATTERNS = [
   /thank you for (?:applying|your (?:application|interest))/i,
-  /application (?:received|status|update|submitted)/i,
+  /application (?:received|status|update|submitted|progress|decision|outcome)/i,
+  /(?:update|status|decision|outcome).{0,30}(?:your )?application/i,
   /we (?:regret|are unable)/i,
+  /unfortunately|not moving forward|will not be progressing|other candidates|no longer under consideration/i,
   /moving forward|next steps/i,
+  /\binterview\b|interview invitation|interview invite/i,
   /(?:technical|coding|online) assessment/i,
-  /schedule.{0,20}(?:call|interview)/i,
+  /schedule.{0,20}(?:call|interview)|(?:call|interview).{0,20}(?:schedule|invite)/i,
   /offer of employment/i,
 ];
 

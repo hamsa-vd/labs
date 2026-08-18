@@ -38,17 +38,19 @@ export default async function TimelinePage({ searchParams }: { searchParams: Pro
   return (
     <main className="ascend-page ascend-page--narrow">
       <div className="ascend-page-head"><div><div className="ascend-eyebrow">Append only</div><h1 className="ascend-title">Timeline</h1></div></div>
-      <Card title="Filters">
-        <form className="ascend-filter-form" method="get">
-          <label className="ascend-label">Company<input name="company" defaultValue={filters.company ?? ''} /></label>
-          <label className="ascend-label">Role<input name="role" defaultValue={filters.role ?? ''} /></label>
-          <Button type="submit">Apply filters</Button>
-          <Link className="ascend-link-button" href="/timeline">Clear</Link>
-        </form>
-      </Card>
-      <Card>
-        {events.length ? events.map((event) => <article className="ascend-event" key={event.id}><time>{event.occurred_at.toLocaleString()}</time><div><div className="ascend-actions"><Badge mono tone="outline">{event.event_type}</Badge><span className="ascend-meta">{event.confidence ? `confidence ${event.confidence}` : event.source}</span></div><h3 style={{ marginTop: 'var(--space-3)' }}><Link href={`/applications/${event.application_id}`}>{event.company_display}</Link></h3><p>{event.role_title ?? 'Role unknown'}{event.subject ? ` · ${event.subject}` : ''}</p>{event.has_evidence && <EvidenceButton eventId={event.id} />}</div></article>) : <div className="ascend-empty">No events match these filters.</div>}
-      </Card>
+      <div className="ascend-stack">
+        <Card title="Filters">
+          <form className="ascend-filter-form" method="get">
+            <label className="ascend-label">Company<input name="company" defaultValue={filters.company ?? ''} /></label>
+            <label className="ascend-label">Role<input name="role" defaultValue={filters.role ?? ''} /></label>
+            <Button type="submit">Apply filters</Button>
+            <Link className="ascend-link-button" href="/timeline">Clear</Link>
+          </form>
+        </Card>
+        <Card>
+          {events.length ? events.map((event) => <article className="ascend-event" key={event.id}><time>{event.occurred_at.toLocaleString()}</time><div><div className="ascend-actions"><Badge mono tone="outline">{event.event_type}</Badge><span className="ascend-meta">{event.confidence ? `confidence ${event.confidence}` : event.source}</span></div><h3 style={{ marginTop: 'var(--space-3)' }}><Link href={`/applications/${event.application_id}`}>{event.company_display}</Link></h3><p>{event.role_title ?? 'Role unknown'}{event.subject ? ` · ${event.subject}` : ''}</p>{event.has_evidence && <EvidenceButton eventId={event.id} />}</div></article>) : <div className="ascend-empty">No events match these filters.</div>}
+        </Card>
+      </div>
       {nextCursor && <Link className="ascend-link-button" href={`/timeline?${next}`}>Next page</Link>}
     </main>
   );
