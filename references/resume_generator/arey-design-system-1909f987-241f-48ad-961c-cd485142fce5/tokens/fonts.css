@@ -1,0 +1,5 @@
+/* arey typefaces.
+   Instrument Sans — UI + display. Geometric-leaning neo-grotesque, tight apertures.
+   JetBrains Mono  — mono accent: eyebrows, metadata, code, numerics.
+   SUBSTITUTION NOTE: no font binaries were supplied, so both are served from Google Fonts. */
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400;500;600&display=swap");

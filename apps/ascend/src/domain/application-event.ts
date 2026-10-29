@@ -37,6 +37,17 @@ export const applicationStatuses = [
 export type ApplicationStatus = (typeof applicationStatuses)[number];
 
 /**
+ * What the `applications.current_status` column may hold. A superset of the
+ * projection: `'draft'` is the state of an application whose resume has been
+ * generated and not yet sent, so it is set by the generator and never by the
+ * classifier. Keeping it out of `applicationEventTypes` and
+ * `applicationStatuses` is what guarantees no extraction can invent it.
+ */
+export const applicationRecordStatuses = ['draft', ...applicationStatuses] as const;
+
+export type ApplicationRecordStatus = (typeof applicationRecordStatuses)[number];
+
+/**
  * Once an application reaches one of these, a later non-terminal event must not
  * drag it backwards. Out-of-order mail is normal: a delayed "we have received
  * your application" often lands after an interview invite. See §5.

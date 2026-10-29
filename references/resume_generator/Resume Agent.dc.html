@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/arey-design-system-1909f987-241f-48ad-961c-cd485142fce5/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/arey-design-system-1909f987-241f-48ad-961c-cd485142fce5/tokens/colors.css">
+<link rel="stylesheet" href="_ds/arey-design-system-1909f987-241f-48ad-961c-cd485142fce5/tokens/typography.css">
+<link rel="stylesheet" href="_ds/arey-design-system-1909f987-241f-48ad-961c-cd485142fce5/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/arey-design-system-1909f987-241f-48ad-961c-cd485142fce5/tokens/radius.css">
+<link rel="stylesheet" href="_ds/arey-design-system-1909f987-241f-48ad-961c-cd485142fce5/tokens/elevation.css">
+<link rel="stylesheet" href="_ds/arey-design-system-1909f987-241f-48ad-961c-cd485142fce5/tokens/motion.css">
+<link rel="stylesheet" href="_ds/arey-design-system-1909f987-241f-48ad-961c-cd485142fce5/tokens/base.css">
+<link rel="stylesheet" href="_ds/arey-design-system-1909f987-241f-48ad-961c-cd485142fce5/styles.css">
+<script src="_ds/arey-design-system-1909f987-241f-48ad-961c-cd485142fce5/_ds_bundle.js"></script>
+<style>
+  body { margin:0; background:var(--bg-canvas); }
+  a { color:var(--text-link); text-decoration:none; }
+  a:hover { color:var(--text-link); opacity:.7; }
+</style>
+</helmet>
+<div data-theme="{{ theme }}" style="display:flex; min-height:100vh; background:var(--bg-canvas); color:var(--text-body); font:var(--type-body); letter-spacing:var(--tracking-body);">
+
+  <sc-if value="{{ signedOut }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Landing" style="position:fixed; inset:0; z-index:80; overflow:auto; background:var(--bg-canvas);">
+      <div style="min-height:100%; display:grid; grid-template-columns:1fr;">
+
+        <header style="position:sticky; top:0; z-index:2; background:var(--surface-glass); backdrop-filter:var(--backdrop-glass); -webkit-backdrop-filter:var(--backdrop-glass); border-bottom:1px solid var(--border-glass);">
+          <div style="max-width:var(--content-max); margin:0 auto; padding:var(--space-4) var(--space-8); display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap;">
+            <span style="width:26px; height:26px; border-radius:var(--radius-sm); background:var(--bg-inverse); color:var(--text-inverse); font:var(--type-eyebrow); display:flex; align-items:center; justify-content:center;">R</span>
+            <span style="font:var(--type-title-3); letter-spacing:var(--tracking-heading); color:var(--text-primary);">resume agent</span>
+            <x-import component-from-global-scope="AreyDesignSystem_1909f9.Badge" hint-size="auto,20px" tone="neutral" size="sm" mono="{{ true }}">invite only</x-import>
+            <span style="margin-left:auto; display:flex; align-items:center; gap:var(--space-3);">
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="ghost" on-click="{{ openInterest }}">Register interest</x-import>
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="primary" icon-left="google-logo" on-click="{{ openLogin }}">Sign in</x-import>
+            </span>
+          </div>
+        </header>
+
+        <div style="max-width:var(--content-max); margin:0 auto; width:100%; box-sizing:border-box; padding:var(--space-16) var(--space-8) var(--space-20); display:grid; gap:var(--space-16);">
+          <div style="display:grid; gap:var(--space-6); max-width:var(--prose-max);">
+            <h1 style="font:var(--type-display); letter-spacing:var(--tracking-display); color:var(--text-primary); margin:0;">One resume per job, written from what you have actually done.</h1>
+            <p style="margin:0; font:var(--type-body-lg); color:var(--text-secondary);">Paste a job description. The agent builds a targeting strategy, writes the resume into your own LaTeX template, reviews it against the posting, and scores it the way an applicant tracking system will. Nothing reaches the page unless your source of truth supports it.</p>
+            <div style="display:flex; align-items:center; gap:var(--space-4); flex-wrap:wrap; padding-top:var(--space-2);">
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,44px" size="lg" variant="primary" icon-left="google-logo" on-click="{{ openLogin }}">Sign in with Google</x-import>
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,44px" size="lg" variant="secondary" icon-left="paper-plane-tilt" on-click="{{ openInterest }}">Register interest</x-import>
+              <span style="font:var(--type-caption); color:var(--text-secondary);">Invite only. Seats are issued by the workspace owner.</span>
+            </div>
+          </div>
+
+          <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-lg); overflow:hidden;">
+            <div style="display:flex; align-items:center; gap:var(--space-3); padding:var(--space-4) var(--space-5); border-bottom:1px solid var(--border-subtle); background:var(--bg-subtle);">
+              <span style="font:var(--type-eyebrow); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-tertiary);">The result view</span>
+              <span style="margin-left:auto; font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">expedia/software-engineer-iii</span>
+            </div>
+            <div style="background:var(--bg-inset); aspect-ratio:16/9; min-height:280px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:var(--space-3); color:var(--text-tertiary);">
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Icon" hint-size="48px,48px" name="image" size="48px"></x-import>
+              <span style="font:var(--type-caption); color:var(--text-tertiary);">Product screenshot — scores, ATS report, LaTeX editor</span>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:var(--space-6);">
+            <sc-for list="{{ landingPoints }}" as="pt" hint-placeholder-count="4">
+              <div style="display:grid; gap:var(--space-3); align-content:start;">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Icon" hint-size="20px,20px" name="{{ pt.icon }}" size="20px"></x-import>
+                <div style="font:var(--type-title-3); letter-spacing:var(--tracking-heading); color:var(--text-primary);">{{ pt.title }}</div>
+                <div style="color:var(--text-secondary);">{{ pt.desc }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:grid; gap:var(--space-6);">
+            <div style="font:var(--type-eyebrow); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-tertiary);">How a run goes</div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:var(--space-4);">
+              <sc-for list="{{ landingFlow }}" as="st" hint-placeholder-count="4">
+                <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--space-5); display:grid; gap:var(--space-2); align-content:start;">
+                  <span style="font:var(--type-eyebrow); font-family:var(--font-mono); color:var(--text-tertiary);">{{ st.n }}</span>
+                  <div style="font:var(--type-label); color:var(--text-primary);">{{ st.title }}</div>
+                  <div style="font:var(--type-caption); color:var(--text-secondary);">{{ st.desc }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:var(--space-8); flex-wrap:wrap; padding-top:var(--space-6); border-top:1px solid var(--border-subtle); font:var(--type-caption); color:var(--text-secondary);">
+            <div><span style="font-family:var(--font-mono); color:var(--text-body);">2</span> scores per application</div>
+            <div><span style="font-family:var(--font-mono); color:var(--text-body);">6</span> editable prompts</div>
+            <div><span style="font-family:var(--font-mono); color:var(--text-body);">0</span> claims we invent</div>
+            <div style="margin-left:auto;">Bring your own keys. We never store them in plain text, and never bill you for model usage.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{ loginOpen }}" hint-placeholder-val="{{ false }}">
+      <x-import component-from-global-scope="AreyDesignSystem_1909f9.Dialog" hint-size="440px,320px" title="Sign in with Google" description="This is the account your applications, prompts, and keys belong to." on-close="{{ closeDialogs }}">
+        <div style="display:grid; gap:var(--space-4);">
+          <div style="display:grid; gap:var(--space-2);">
+            <sc-for list="{{ accounts }}" as="acct" hint-placeholder-count="2">
+              <div onClick="{{ signIn }}" style="display:flex; align-items:center; gap:var(--space-4); padding:var(--space-3); border:1px solid var(--border-default); border-radius:var(--radius-control); cursor:pointer;" style-hover="background:var(--bg-hover)">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Avatar" hint-size="32px,32px" name="{{ acct.name }}" size="32"></x-import>
+                <div style="flex:1; min-width:0;">
+                  <div style="font:var(--type-label); color:var(--text-primary);">{{ acct.name }}</div>
+                  <div style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">{{ acct.email }}</div>
+                </div>
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Icon" hint-size="14px,14px" name="caret-right" size="14px"></x-import>
+              </div>
+            </sc-for>
+            <div onClick="{{ signIn }}" style="display:flex; align-items:center; gap:var(--space-4); padding:var(--space-3); border:1px dashed var(--border-strong); border-radius:var(--radius-control); cursor:pointer;">
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Icon" hint-size="20px,20px" name="user-plus" size="20px"></x-import>
+              <span style="font:var(--type-label); color:var(--text-primary);">Use another account</span>
+            </div>
+          </div>
+          <div style="font:var(--type-caption); color:var(--text-secondary);">We read your name, email, and profile picture. Nothing else, and nothing is posted on your behalf.</div>
+        </div>
+      </x-import>
+    </sc-if>
+
+    <sc-if value="{{ interestOpen }}" hint-placeholder-val="{{ false }}">
+      <x-import component-from-global-scope="AreyDesignSystem_1909f9.Dialog" hint-size="440px,420px" title="Register interest" description="Invite only for now. Tell us where you are and we will write when a seat opens." on-close="{{ closeDialogs }}">
+        <div style="display:grid; gap:var(--space-4);">
+          <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Email">
+            <x-import component-from-global-scope="AreyDesignSystem_1909f9.Input" hint-size="100%,36px" type="email" placeholder="you@example.com"></x-import>
+          </x-import>
+          <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Current role" optional="{{ true }}">
+            <x-import component-from-global-scope="AreyDesignSystem_1909f9.Input" hint-size="100%,36px" placeholder="Backend engineer, 5 years"></x-import>
+          </x-import>
+          <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Do you already have provider keys?" hint="The app runs on your own OpenAI and Anthropic keys.">
+            <x-import component-from-global-scope="AreyDesignSystem_1909f9.Select" hint-size="100%,36px" options="{{ keyAnswers }}"></x-import>
+          </x-import>
+          <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,110px" label="What are you applying for?" optional="{{ true }}">
+            <x-import component-from-global-scope="AreyDesignSystem_1909f9.Textarea" hint-size="100%,80px" rows="3" placeholder="Senior backend roles in the UK, mostly fintech."></x-import>
+          </x-import>
+          <div style="display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap; padding-top:var(--space-2); border-top:1px solid var(--border-subtle);">
+            <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="primary" on-click="{{ closeDialogs }}">Send</x-import>
+            <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="ghost" on-click="{{ closeDialogs }}">Cancel</x-import>
+            <span style="font:var(--type-caption); color:var(--text-secondary); margin-left:auto;">One email, no list.</span>
+          </div>
+        </div>
+      </x-import>
+    </sc-if>
+  </sc-if>
+
+  <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; z-index:60; display:flex;">
+      <div onClick="{{ closeDrawer }}" style="position:absolute; inset:0; background:var(--surface-scrim);"></div>
+      <div style="position:relative; width:264px; max-width:82vw; display:flex; flex-direction:column; background:var(--surface-glass); backdrop-filter:var(--backdrop-glass); -webkit-backdrop-filter:var(--backdrop-glass); border-right:1px solid var(--border-glass); box-shadow:var(--shadow-lg);">
+        <div style="display:flex; align-items:center; gap:var(--space-3); height:var(--topbar-h); padding:0 var(--space-4) 0 var(--space-6); border-bottom:1px solid var(--border-glass); flex:none;">
+          <span style="width:22px; height:22px; border-radius:var(--radius-sm); background:var(--bg-inverse); color:var(--text-inverse); font:var(--type-eyebrow); display:flex; align-items:center; justify-content:center;">R</span>
+          <span style="font:var(--type-label); color:var(--text-primary);">resume agent</span>
+          <span style="margin-left:auto;"><x-import component-from-global-scope="AreyDesignSystem_1909f9.IconButton" hint-size="36px,36px" icon="x" label="Close navigation" variant="ghost" on-click="{{ closeDrawer }}"></x-import></span>
+        </div>
+        <div style="flex:1; min-height:0; overflow:auto;">
+          <x-import component-from-global-scope="AreyDesignSystem_1909f9.SidebarNav" hint-size="100%,320px" groups="{{ navGroups }}" value="{{ screen }}" on-change="{{ gotoAndClose }}"></x-import>
+        </div>
+        <div style="padding:var(--space-4); border-top:1px solid var(--border-glass); display:flex; align-items:center; gap:var(--space-3); flex:none;">
+          <x-import component-from-global-scope="AreyDesignSystem_1909f9.Avatar" hint-size="28px,28px" name="Hamsa Vardhan" size="28"></x-import>
+          <div style="flex:1; min-width:0;">
+            <div style="font:var(--type-label); color:var(--text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Hamsa Vardhan</div>
+            <div style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">hamsa@example.com</div>
+          </div>
+          <x-import component-from-global-scope="AreyDesignSystem_1909f9.IconButton" hint-size="36px,36px" icon="sign-out" label="Sign out" variant="ghost" on-click="{{ signOut }}"></x-import>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+
+  <aside style="{{ sidebarStyle }}">
+    <div style="display:flex; align-items:center; gap:var(--space-3); height:var(--topbar-h); padding:0 var(--space-6); border-bottom:1px solid var(--border-subtle); flex:none;">
+      <span style="width:22px; height:22px; border-radius:var(--radius-sm); background:var(--bg-inverse); color:var(--text-inverse); font:var(--type-eyebrow); display:flex; align-items:center; justify-content:center;">R</span>
+      <span style="font:var(--type-label); color:var(--text-primary);">resume agent</span>
+      <span style="margin-left:auto; font:var(--type-eyebrow); color:var(--text-tertiary); letter-spacing:var(--tracking-eyebrow);">v4.2.0</span>
+    </div>
+    <div style="flex:1; min-height:0; overflow:auto;">
+      <x-import component-from-global-scope="AreyDesignSystem_1909f9.SidebarNav" hint-size="100%,320px" groups="{{ navGroups }}" value="{{ screen }}" on-change="{{ goto }}"></x-import>
+    </div>
+    <div style="padding:var(--space-4); border-top:1px solid var(--border-subtle); display:grid; gap:var(--space-3); flex:none;">
+      <div style="display:flex; align-items:center; gap:var(--space-3); padding:var(--space-2); border-radius:var(--radius-control);">
+        <x-import component-from-global-scope="AreyDesignSystem_1909f9.Avatar" hint-size="28px,28px" name="Hamsa Vardhan" size="28"></x-import>
+        <div style="flex:1; min-width:0;">
+          <div style="font:var(--type-label); color:var(--text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Hamsa Vardhan</div>
+          <div style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">hamsa@example.com</div>
+        </div>
+        <x-import component-from-global-scope="AreyDesignSystem_1909f9.IconButton" hint-size="36px,36px" icon="sign-out" label="Sign out" variant="ghost" on-click="{{ signOut }}"></x-import>
+      </div>
+    </div>
+  </aside>
+
+  <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
+    <header style="position:sticky; top:0; z-index:20; height:var(--topbar-h); flex:none; display:flex; align-items:center; gap:var(--space-4); padding:0 var(--space-8); background:var(--surface-glass); backdrop-filter:var(--backdrop-glass); -webkit-backdrop-filter:var(--backdrop-glass); border-bottom:1px solid var(--border-glass);">
+      <div style="display:flex; align-items:center; gap:var(--space-2); min-width:0; font:var(--type-label); color:var(--text-secondary);">
+        <span>{{ crumbRoot }}</span>
+        <span style="color:var(--text-tertiary);">/</span>
+        <span style="color:var(--text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ crumbLeaf }}</span>
+      </div>
+      <div style="margin-left:auto; display:flex; align-items:center; gap:var(--space-3);">
+        <span style="{{ menuTriggerStyle }}"><x-import component-from-global-scope="AreyDesignSystem_1909f9.IconButton" hint-size="36px,36px" icon="list" label="Open navigation" variant="ghost" on-click="{{ openDrawer }}"></x-import></span>
+        <x-import component-from-global-scope="AreyDesignSystem_1909f9.IconButton" hint-size="36px,36px" icon="{{ themeIcon }}" label="Toggle theme" variant="ghost" on-click="{{ toggleTheme }}"></x-import>
+        <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="primary" icon-left="plus" on-click="{{ gotoNew }}">New application</x-import>
+      </div>
+    </header>
+
+    <main style="flex:1; min-width:0; padding:var(--space-8); display:grid; gap:var(--space-8); align-content:start; max-width:1400px;">
+
+      <sc-if value="{{ isPipeline }}" hint-placeholder-val="{{ true }}">
+        <section data-screen-label="Pipeline" style="display:grid; gap:var(--space-6);">
+          <div style="display:flex; align-items:flex-end; gap:var(--space-6); flex-wrap:wrap;">
+            <div style="flex:1; min-width:240px;">
+              <h1 style="font:var(--type-title-1); letter-spacing:var(--tracking-heading); color:var(--text-primary); margin:0;">Pipeline</h1>
+              <p style="margin:var(--space-2) 0 0; color:var(--text-secondary); max-width:var(--prose-max);">Every application you are tracking, tailored here or brought in from elsewhere. Scores are computed on the resume you last compiled or uploaded.</p>
+            </div>
+            <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="secondary" icon-left="upload-simple" on-click="{{ gotoImport }}">Import application</x-import>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:var(--space-4);">
+            <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--space-5);">
+              <div style="font:var(--type-eyebrow); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-tertiary);">Active</div>
+              <div style="font:var(--type-title-1); letter-spacing:var(--tracking-heading); color:var(--text-primary); margin-top:var(--space-2);">6</div>
+              <div style="font:var(--type-caption); color:var(--text-secondary); margin-top:var(--space-1);">1 draft · 4 applied · 1 interviewing</div>
+            </div>
+            <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--space-5);">
+              <div style="font:var(--type-eyebrow); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-tertiary);">Median ATS</div>
+              <div style="font:var(--type-title-1); letter-spacing:var(--tracking-heading); color:var(--text-primary); margin-top:var(--space-2); font-family:var(--font-mono);">71</div>
+              <div style="font:var(--type-caption); color:var(--text-secondary); margin-top:var(--space-1);">Pass mark is <span style="font-family:var(--font-mono);">80</span></div>
+            </div>
+            <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--space-5);">
+              <div style="font:var(--type-eyebrow); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-tertiary);">Median review</div>
+              <div style="font:var(--type-title-1); letter-spacing:var(--tracking-heading); color:var(--text-primary); margin-top:var(--space-2); font-family:var(--font-mono);">8.7</div>
+              <div style="font:var(--type-caption); color:var(--text-secondary); margin-top:var(--space-1);">Pass mark is <span style="font-family:var(--font-mono);">8.0</span></div>
+            </div>
+            <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--space-5);">
+              <div style="font:var(--type-eyebrow); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-tertiary);">Spend this month</div>
+              <div style="font:var(--type-title-1); letter-spacing:var(--tracking-heading); color:var(--text-primary); margin-top:var(--space-2); font-family:var(--font-mono);">$4.18</div>
+              <div style="font:var(--type-caption); color:var(--text-secondary); margin-top:var(--space-1);">Your keys, your bill</div>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:var(--space-4); flex-wrap:wrap;">
+            <x-import component-from-global-scope="AreyDesignSystem_1909f9.Tabs" hint-size="auto,34px" variant="pill" items="{{ filterItems }}" value="{{ filter }}" on-change="{{ setFilter }}"></x-import>
+            <div style="margin-left:auto; display:flex; align-items:center; gap:var(--space-3);">
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Input" hint-size="220px,36px" icon="magnifying-glass" placeholder="Search company or role" style="width:220px"></x-import>
+            </div>
+          </div>
+
+          <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); overflow:hidden;">
+            <div style="display:grid; grid-template-columns:minmax(220px,2.4fr) 116px 92px 92px minmax(120px,1fr) 96px; gap:var(--space-4); padding:var(--space-3) var(--space-6); border-bottom:1px solid var(--border-subtle); background:var(--bg-subtle); font:var(--type-eyebrow); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-tertiary);">
+              <div>Role</div><div>Status</div><div>ATS</div><div>Review</div><div>Round</div><div style="text-align:right;">Updated</div>
+            </div>
+            <sc-for list="{{ applications }}" as="app" hint-placeholder-count="6">
+              <div onClick="{{ app.open }}" style="{{ app.rowStyle }}">
+                <div style="min-width:0;">
+                  <div style="font:var(--type-label); color:var(--text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ app.role }}</div>
+                  <div style="display:flex; align-items:center; gap:var(--space-2); margin-top:2px;">
+                    <span style="font:var(--type-caption); color:var(--text-secondary);">{{ app.company }}</span>
+                    <span style="font:var(--type-eyebrow); letter-spacing:var(--tracking-eyebrow); color:var(--text-tertiary);">{{ app.origin }}</span>
+                  </div>
+                </div>
+                <div><x-import component-from-global-scope="AreyDesignSystem_1909f9.Badge" hint-size="auto,24px" tone="{{ app.tone }}" dot="{{ true }}">{{ app.status }}</x-import></div>
+                <div style="font-family:var(--font-mono); font-size:var(--text-14); color:{{ app.atsColor }};">{{ app.ats }}</div>
+                <div style="font-family:var(--font-mono); font-size:var(--text-14); color:var(--text-body);">{{ app.review }}</div>
+                <div style="font:var(--type-caption); color:var(--text-secondary); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ app.round }}</div>
+                <div style="font-family:var(--font-mono); font-size:var(--text-12); color:var(--text-tertiary); text-align:right;">{{ app.updated }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isNew }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="New application" style="display:grid; gap:var(--space-6);">
+          <div>
+            <h1 style="font:var(--type-title-1); letter-spacing:var(--tracking-heading); color:var(--text-primary); margin:0;">New application</h1>
+            <p style="margin:var(--space-2) 0 0; color:var(--text-secondary); max-width:var(--prose-max);">Paste the job description. Your resume is written from your own source of truth — nothing is invented.</p>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:var(--space-6); align-items:start;">
+            <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-5);">
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:var(--space-4);">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Company">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Input" hint-size="100%,36px" placeholder="Monzo"></x-import>
+                </x-import>
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Role">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Input" hint-size="100%,36px" placeholder="Backend Engineer III"></x-import>
+                </x-import>
+              </div>
+
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,220px" label="Job description" hint="Paste the full posting. Short or partial JDs produce weaker targeting.">
+                <div style="display:grid; gap:var(--space-3);">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.SegmentedControl" hint-size="auto,32px" options="{{ jdSourceOptions }}" value="{{ jdSource }}" on-change="{{ setJdSource }}"></x-import>
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Textarea" hint-size="100%,180px" rows="9" placeholder="Paste the job description here…"></x-import>
+                </div>
+              </x-import>
+
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Base template" hint="Auto picks a template from the JD. Recommended: backend-java — JD leans Java, Kafka, and platform ownership.">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Select" hint-size="100%,36px" options="{{ templateOptions }}"></x-import>
+              </x-import>
+
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:var(--space-4); flex-wrap:wrap; padding-top:var(--space-2); border-top:1px solid var(--border-subtle);">
+                <label style="display:flex; align-items:center; gap:var(--space-3); font:var(--type-label); color:var(--text-body); cursor:pointer;">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Switch" hint-size="40px,24px" checked="{{ true }}"></x-import>
+                  Compile PDFs when done
+                </label>
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="primary" icon-left="sparkle" loading="{{ running }}" on-click="{{ startRun }}">{{ runLabel }}</x-import>
+              </div>
+            </div>
+
+            <div style="display:grid; gap:var(--space-4);">
+              <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-4);">
+                <div style="display:flex; align-items:center; gap:var(--space-3);">
+                  <div style="font:var(--type-title-3); letter-spacing:var(--tracking-heading); color:var(--text-primary);">Run</div>
+                  <span style="margin-left:auto;"><x-import component-from-global-scope="AreyDesignSystem_1909f9.Badge" hint-size="auto,24px" tone="{{ runTone }}" mono="{{ true }}" size="sm">{{ runStatus }}</x-import></span>
+                </div>
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.ProgressBar" hint-size="100%,6px" value="{{ runPct }}" tone="accent"></x-import>
+                <div style="display:grid; gap:var(--space-1);">
+                  <sc-for list="{{ steps }}" as="step" hint-placeholder-count="8">
+                    <div style="display:flex; align-items:center; gap:var(--space-3); padding:var(--space-2) 0; border-bottom:1px solid var(--border-subtle);">
+                      <span style="{{ step.dotStyle }}"></span>
+                      <span style="font:var(--type-label); color:{{ step.color }}; flex:1; min-width:0;">{{ step.label }}</span>
+                      <span style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">{{ step.meta }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="background:var(--bg-inset); border:1px solid transparent; border-radius:var(--radius-card); padding:var(--pad-card); display:grid; gap:var(--space-3);">
+                <div style="font:var(--type-eyebrow); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-tertiary);">This run uses</div>
+                <div style="display:grid; gap:var(--space-2); font:var(--type-caption); color:var(--text-secondary);">
+                  <div style="display:flex; justify-content:space-between; gap:var(--space-4);"><span>Generation</span><span style="font-family:var(--font-mono); color:var(--text-body);">gpt-5.6-sol</span></div>
+                  <div style="display:flex; justify-content:space-between; gap:var(--space-4);"><span>Review</span><span style="font-family:var(--font-mono); color:var(--text-body);">claude-opus-4</span></div>
+                  <div style="display:flex; justify-content:space-between; gap:var(--space-4);"><span>Your prompt overlay</span><span style="font-family:var(--font-mono); color:var(--text-body);">active</span></div>
+                  <div style="display:flex; justify-content:space-between; gap:var(--space-4);"><span>Est. cost</span><span style="font-family:var(--font-mono); color:var(--text-body);">$0.62</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isImport }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Import application" style="display:grid; gap:var(--space-6);">
+          <div>
+            <h1 style="font:var(--type-title-1); letter-spacing:var(--tracking-heading); color:var(--text-primary); margin:0;">Import application</h1>
+            <p style="margin:var(--space-2) 0 0; color:var(--text-secondary); max-width:var(--prose-max);">Already applied somewhere with your own resume? Bring it in. We score it and track it alongside everything else — nothing is rewritten unless you ask.</p>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:var(--space-6); align-items:start;">
+            <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-5);">
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:var(--space-4);">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Company">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Input" hint-size="100%,36px" placeholder="Wise"></x-import>
+                </x-import>
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Role">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Input" hint-size="100%,36px" placeholder="Senior Backend Engineer"></x-import>
+                </x-import>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:var(--space-4);">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Status">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Select" hint-size="100%,36px" options="{{ statusOptions }}"></x-import>
+                </x-import>
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Applied on" optional="{{ true }}">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Input" hint-size="100%,36px" mono="{{ true }}" placeholder="2026-07-24"></x-import>
+                </x-import>
+              </div>
+
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,180px" label="Job description" hint="Required. Both scores are computed against this.">
+                <div style="display:grid; gap:var(--space-3);">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.SegmentedControl" hint-size="auto,32px" options="{{ jdSourceOptions }}" value="{{ jdSource }}" on-change="{{ setJdSource }}"></x-import>
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Textarea" hint-size="100%,120px" rows="6" placeholder="Paste the posting you applied to…"></x-import>
+                </div>
+              </x-import>
+
+              <div style="display:grid; gap:var(--space-3);">
+                <div style="font:var(--type-eyebrow); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-tertiary);">Documents</div>
+                <sc-for list="{{ uploadSlots }}" as="slot" hint-placeholder-count="2">
+                  <div style="display:flex; align-items:center; gap:var(--space-4); padding:var(--space-4); border:1px dashed var(--border-strong); border-radius:var(--radius-control); background:var(--bg-subtle); flex-wrap:wrap;">
+                    <x-import component-from-global-scope="AreyDesignSystem_1909f9.Icon" hint-size="20px,20px" name="{{ slot.icon }}" size="20px"></x-import>
+                    <div style="flex:1; min-width:160px;">
+                      <div style="font:var(--type-label); color:var(--text-primary);">{{ slot.label }}</div>
+                      <div style="font:var(--type-caption); color:var(--text-secondary);">{{ slot.hint }}</div>
+                    </div>
+                    <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" size="sm" variant="secondary" icon-left="upload-simple">Choose file</x-import>
+                  </div>
+                </sc-for>
+                <div style="font:var(--type-caption); color:var(--text-secondary);">A PDF is scored and tracked. Upload the <span style="font-family:var(--font-mono);">.tex</span> too if you want to edit and recompile it here later.</div>
+              </div>
+
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:var(--space-4); flex-wrap:wrap; padding-top:var(--space-2); border-top:1px solid var(--border-subtle);">
+                <label style="display:flex; align-items:center; gap:var(--space-3); font:var(--type-label); color:var(--text-body); cursor:pointer;">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Switch" hint-size="40px,24px" checked="{{ true }}"></x-import>
+                  Add new skills found in the resume to my source of truth
+                </label>
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="primary" icon-left="target" on-click="{{ gotoResult }}">Score and track</x-import>
+              </div>
+            </div>
+
+            <div style="display:grid; gap:var(--space-4);">
+              <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-4);">
+                <div style="font:var(--type-title-3); letter-spacing:var(--tracking-heading); color:var(--text-primary);">What runs on import</div>
+                <div style="display:grid; gap:var(--space-3);">
+                  <sc-for list="{{ importSteps }}" as="st" hint-placeholder-count="4">
+                    <div style="display:flex; gap:var(--space-3); align-items:flex-start;">
+                      <x-import component-from-global-scope="AreyDesignSystem_1909f9.Icon" hint-size="16px,16px" name="{{ st.icon }}" size="16px"></x-import>
+                      <div style="flex:1; min-width:0;">
+                        <div style="font:var(--type-label); color:var(--text-primary);">{{ st.label }}</div>
+                        <div style="font:var(--type-caption); color:var(--text-secondary);">{{ st.desc }}</div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="padding-top:var(--space-3); border-top:1px solid var(--border-subtle); font:var(--type-caption); color:var(--text-secondary);">No generation and no revision. Two calls, roughly <span style="font-family:var(--font-mono);">$0.11</span> on your keys.</div>
+              </div>
+              <div style="background:var(--bg-inset); border-radius:var(--radius-card); padding:var(--pad-card); display:grid; gap:var(--space-2);">
+                <div style="font:var(--type-label); color:var(--text-primary);">Imported applications are full applications</div>
+                <div style="font:var(--type-caption); color:var(--text-secondary);">They get the same status tracking, rounds, notes, ATS report, and revision history. When you want a tailored version, open the application and run a revision against the same job description.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isResult }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Result" style="display:grid; gap:var(--space-6);">
+          <div style="display:flex; align-items:flex-start; gap:var(--space-4); flex-wrap:wrap;">
+            <div style="flex:1; min-width:260px;">
+              <div style="display:flex; align-items:center; gap:var(--space-3);">
+                <h1 style="font:var(--type-title-1); letter-spacing:var(--tracking-heading); color:var(--text-primary); margin:0;">Software Engineer III</h1>
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Badge" hint-size="auto,24px" tone="accent" dot="{{ true }}">Applied</x-import>
+              </div>
+              <div style="margin-top:var(--space-2); color:var(--text-secondary); display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap;">
+                <span>Expedia</span>
+                <span style="color:var(--text-tertiary);">·</span>
+                <span style="font-family:var(--font-mono); font-size:var(--text-12); color:var(--text-tertiary);">expedia/software-engineer-iii</span>
+                <span style="color:var(--text-tertiary);">·</span>
+                <span style="font-family:var(--font-mono); font-size:var(--text-12); color:var(--text-tertiary);">2 revisions</span>
+              </div>
+            </div>
+            <div style="display:flex; gap:var(--space-3); flex-wrap:wrap;">
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="secondary" icon-left="download-simple">Download PDF</x-import>
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="secondary" icon-left="arrow-clockwise">Re-run review</x-import>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:var(--space-4);">
+            <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--space-6); display:grid; gap:var(--space-4);">
+              <div style="display:flex; align-items:baseline; gap:var(--space-3);">
+                <div style="font:var(--type-eyebrow); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-tertiary);">ATS score</div>
+                <span style="margin-left:auto;"><x-import component-from-global-scope="AreyDesignSystem_1909f9.Badge" hint-size="auto,20px" tone="danger" size="sm">Fair</x-import></span>
+              </div>
+              <div style="display:flex; align-items:baseline; gap:var(--space-2);">
+                <div style="font:var(--weight-semibold) var(--text-56)/var(--leading-tight) var(--font-mono); letter-spacing:var(--tracking-display); color:var(--danger-text);">58</div>
+                <div style="font-family:var(--font-mono); font-size:var(--text-14); color:var(--text-tertiary);">/ 100</div>
+              </div>
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.ProgressBar" hint-size="100%,6px" value="58" tone="danger"></x-import>
+              <div style="display:grid; gap:var(--space-2); font:var(--type-caption); color:var(--text-secondary);">
+                <div style="display:flex; justify-content:space-between;"><span>Keyword match</span><span style="font-family:var(--font-mono); color:var(--text-body);">24.0 / 50</span></div>
+                <div style="display:flex; justify-content:space-between;"><span>Structural</span><span style="font-family:var(--font-mono); color:var(--text-body);">22.5 / 30</span></div>
+                <div style="display:flex; justify-content:space-between;"><span>Semantic</span><span style="font-family:var(--font-mono); color:var(--text-body);">11.5 / 20</span></div>
+              </div>
+            </div>
+
+            <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--space-6); display:grid; gap:var(--space-4);">
+              <div style="display:flex; align-items:baseline; gap:var(--space-3);">
+                <div style="font:var(--type-eyebrow); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-tertiary);">Review score</div>
+                <span style="margin-left:auto;"><x-import component-from-global-scope="AreyDesignSystem_1909f9.Badge" hint-size="auto,20px" tone="success" size="sm">Pass</x-import></span>
+              </div>
+              <div style="display:flex; align-items:baseline; gap:var(--space-2);">
+                <div style="font:var(--weight-semibold) var(--text-56)/var(--leading-tight) var(--font-mono); letter-spacing:var(--tracking-display); color:var(--success-text);">8.7</div>
+                <div style="font-family:var(--font-mono); font-size:var(--text-14); color:var(--text-tertiary);">/ 10</div>
+              </div>
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.ProgressBar" hint-size="100%,6px" value="87" tone="success"></x-import>
+              <div style="display:grid; gap:var(--space-2); font:var(--type-caption); color:var(--text-secondary);">
+                <div style="display:flex; justify-content:space-between;"><span>JD skills match</span><span style="font-family:var(--font-mono); color:var(--text-body);">8.5</span></div>
+                <div style="display:flex; justify-content:space-between;"><span>Evidence strength</span><span style="font-family:var(--font-mono); color:var(--text-body);">9.0</span></div>
+                <div style="display:flex; justify-content:space-between;"><span>Credibility</span><span style="font-family:var(--font-mono); color:var(--text-body);">9.2</span></div>
+              </div>
+            </div>
+
+            <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--space-6); display:grid; gap:var(--space-3); align-content:start;">
+              <div style="font:var(--type-eyebrow); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-tertiary);">What is holding it back</div>
+              <p style="margin:0; color:var(--text-body);">Three required keywords have no evidence in your source of truth. Add evidence and the resume can be revised to include them.</p>
+              <div style="display:flex; gap:var(--space-2); flex-wrap:wrap;">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Tag" hint-size="auto,24px" tone="danger">Kotlin</x-import>
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Tag" hint-size="auto,24px" tone="danger">Couchbase</x-import>
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Tag" hint-size="auto,24px" tone="danger">MSSQL</x-import>
+              </div>
+              <span style="margin-top:var(--space-2);"><x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="secondary" icon-left="target" on-click="{{ gotoAts }}">Open ATS report</x-import></span>
+            </div>
+          </div>
+
+          <x-import component-from-global-scope="AreyDesignSystem_1909f9.Tabs" hint-size="100%,36px" items="{{ resultTabs }}" value="{{ resultTab }}" on-change="{{ setResultTab }}"></x-import>
+
+          <sc-if value="{{ tabIsResume }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:var(--space-6); align-items:start;">
+              <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); overflow:hidden;">
+                <div style="display:flex; align-items:center; gap:var(--space-3); padding:var(--space-4) var(--space-5); border-bottom:1px solid var(--border-subtle);">
+                  <div style="font:var(--type-label); color:var(--text-primary);">Compiled PDF</div>
+                  <span style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">1 page · 128 KB</span>
+                  <span style="margin-left:auto;"><x-import component-from-global-scope="AreyDesignSystem_1909f9.Tabs" hint-size="auto,32px" variant="pill" items="{{ docItems }}" value="{{ doc }}" on-change="{{ setDoc }}"></x-import></span>
+                </div>
+                <div style="background:var(--bg-inset); padding:var(--space-6); display:flex; justify-content:center;">
+                  <div style="width:100%; max-width:420px; aspect-ratio:1/1.414; background:var(--bg-base); border:1px solid var(--border-default); display:flex; align-items:center; justify-content:center; color:var(--text-tertiary);">
+                    <x-import component-from-global-scope="AreyDesignSystem_1909f9.Icon" hint-size="48px,48px" name="file-pdf" size="48px"></x-import>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); overflow:hidden; display:grid;">
+                <div style="display:flex; align-items:center; gap:var(--space-3); padding:var(--space-4) var(--space-5); border-bottom:1px solid var(--border-subtle);">
+                  <div style="font:var(--type-label); color:var(--text-primary);">LaTeX source</div>
+                  <span style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">resume.tex</span>
+                  <span style="margin-left:auto; display:flex; gap:var(--space-2);">
+                    <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,28px" size="sm" variant="ghost">Save</x-import>
+                    <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,28px" size="sm" variant="primary" icon-left="play">Compile</x-import>
+                  </span>
+                </div>
+                <pre style="margin:0; padding:var(--space-5); background:var(--bg-inset); font:var(--type-code); color:var(--text-body); overflow:auto; max-height:520px; white-space:pre;">\documentclass[10pt]{article}
+
+\usepackage[a4paper,margin=0.5in]{geometry}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage[T1]{fontenc}
+\usepackage{charter}
+\usepackage[utf8]{inputenc}
+
+\definecolor{sectioncolor}{RGB}{0,102,102}
+
+\titleformat{\section}
+  {\normalsize\bfseries\color{sectioncolor}}
+  {}{0em}{}[\titlerule]
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\begin{document}
+
+\begin{center}
+  {\Large\bfseries Hamsa Vardhan}\\
+  London, UK · hamsa@example.com
+\end{center}
+
+\section{Experience}
+\textbf{Senior Software Engineer} \hfill 2023--present\\
+\textit{LivExtech}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item Cut OpenSearch p99 latency 42\% by re-sharding
+        and adding a Redis read-through cache.
+  \item Owned the ingestion service handling 3.1M
+        events/day across 14 tenants.
+\end{itemize}
+
+\end{document}</pre>
+                <div style="padding:var(--space-3) var(--space-5); border-top:1px solid var(--border-subtle); background:var(--bg-subtle); font:var(--type-caption); font-family:var(--font-mono); color:var(--success-text);">latexmk · compiled in 1.2 s · no errors</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabIsAts }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid; gap:var(--space-6);">
+              <div style="background:var(--warning-wash); border:1px solid transparent; border-radius:var(--radius-card); padding:var(--space-4) var(--space-5); color:var(--warning-text); display:flex; gap:var(--space-3); align-items:flex-start;">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Icon" hint-size="16px,16px" name="warning" size="16px"></x-import>
+                <div>ATS score <span style="font-family:var(--font-mono);">58/100</span> is below the pass mark of <span style="font-family:var(--font-mono);">80</span>. This resume may not reach a human.</div>
+              </div>
+
+              <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-5);">
+                <div>
+                  <div style="font:var(--type-title-3); letter-spacing:var(--tracking-heading); color:var(--text-primary);">Missing required keywords</div>
+                  <p style="margin:var(--space-2) 0 0; color:var(--text-secondary); max-width:var(--prose-max);">A keyword is only added to your resume once you attach real evidence: where you used it and what you did with it. Nothing is added on your word alone.</p>
+                </div>
+                <div style="display:grid; gap:var(--space-3);">
+                  <sc-for list="{{ missingRequired }}" as="kw" hint-placeholder-count="3">
+                    <div style="border:1px solid var(--border-default); border-radius:var(--radius-control); overflow:hidden;">
+                      <div style="display:flex; align-items:center; gap:var(--space-3); padding:var(--space-3) var(--space-4); flex-wrap:wrap;">
+                        <span style="font:var(--type-label); font-family:var(--font-mono); color:var(--text-primary);">{{ kw.name }}</span>
+                        <span style="font:var(--type-caption); color:var(--text-secondary);">{{ kw.note }}</span>
+                        <span style="margin-left:auto;"><x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,28px" size="sm" variant="secondary" icon-left="{{ kw.icon }}" on-click="{{ kw.toggle }}">{{ kw.action }}</x-import></span>
+                      </div>
+                      <sc-if value="{{ kw.open }}" hint-placeholder-val="{{ false }}">
+                        <div style="border-top:1px solid var(--border-subtle); background:var(--bg-subtle); padding:var(--space-5); display:grid; gap:var(--space-4);">
+                          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:var(--space-4);">
+                            <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Where did you use it?">
+                              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Select" hint-size="100%,36px" options="{{ sourceOptions }}"></x-import>
+                            </x-import>
+                            <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Project or system">
+                              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Input" hint-size="100%,36px" placeholder="Ingestion pipeline"></x-import>
+                            </x-import>
+                          </div>
+                          <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,110px" label="What did you do with it?" hint="One sentence, past tense, with a number if you have one. This becomes a bullet in your source of truth.">
+                            <x-import component-from-global-scope="AreyDesignSystem_1909f9.Textarea" hint-size="100%,80px" rows="3" placeholder="Rewrote the consumer in Kotlin, cutting cold-start from 4.1 s to 900 ms."></x-import>
+                          </x-import>
+                          <div style="display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap;">
+                            <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="primary" on-click="{{ kw.toggle }}">Add evidence</x-import>
+                            <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="ghost" on-click="{{ kw.toggle }}">Cancel</x-import>
+                            <span style="font:var(--type-caption); color:var(--text-secondary); margin-left:auto;">Saved to your profile, then queued for the next revision.</span>
+                          </div>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:var(--space-4);">
+                <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-3); align-content:start;">
+                  <div style="font:var(--type-label); color:var(--text-primary);">Matched <span style="font-family:var(--font-mono); color:var(--text-tertiary);">18</span></div>
+                  <div style="display:flex; gap:var(--space-2); flex-wrap:wrap;">
+                    <sc-for list="{{ matched }}" as="m" hint-placeholder-count="10">
+                      <x-import component-from-global-scope="AreyDesignSystem_1909f9.Tag" hint-size="auto,24px" tone="success">{{ m.name }}</x-import>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-3); align-content:start;">
+                  <div style="font:var(--type-label); color:var(--text-primary);">Hard requirements</div>
+                  <div style="display:grid; gap:var(--space-3);">
+                    <sc-for list="{{ hardReqs }}" as="req" hint-placeholder-count="4">
+                      <div style="display:flex; gap:var(--space-3); align-items:flex-start;">
+                        <span style="{{ req.dotStyle }}"></span>
+                        <div style="flex:1; min-width:0;">
+                          <div style="font:var(--type-body); color:var(--text-body);">{{ req.label }}</div>
+                          <div style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">{{ req.conf }}</div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabIsReview }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:var(--space-6); align-items:start;">
+              <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-4); align-content:start;">
+                <div style="font:var(--type-title-3); letter-spacing:var(--tracking-heading); color:var(--text-primary);">Recruiter read</div>
+                <p style="margin:0; color:var(--text-body); max-width:var(--prose-max);">Strong, defensible mid-level submission. Backend ownership, OpenSearch latency win, Redis caching, observability, and mentoring all land cleanly against the SDE III bar. No overclaiming. Could push harder on quantified mentoring outcomes and explicit architecture-review framing, but a recruiter would shortlist this.</p>
+                <div style="display:grid; gap:var(--space-2); padding-top:var(--space-3); border-top:1px solid var(--border-subtle);">
+                  <sc-for list="{{ categoryScores }}" as="cat" hint-placeholder-count="6">
+                    <div style="display:flex; align-items:center; gap:var(--space-4);">
+                      <span style="font:var(--type-caption); color:var(--text-secondary); width:200px; flex:none;">{{ cat.label }}</span>
+                      <span style="flex:1; height:6px; border-radius:var(--radius-full); background:var(--bg-inset); overflow:hidden;"><span style="{{ cat.fillStyle }}"></span></span>
+                      <span style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-body); width:32px; text-align:right;">{{ cat.score }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="display:grid; gap:var(--space-4);">
+                <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-3);">
+                  <div style="font:var(--type-label); color:var(--text-primary);">Must fix</div>
+                  <sc-for list="{{ mustFix }}" as="item" hint-placeholder-count="2">
+                    <div style="display:flex; gap:var(--space-3); align-items:flex-start;">
+                      <span style="width:6px; height:6px; border-radius:50%; background:var(--danger-solid); margin-top:7px; flex:none;"></span>
+                      <span style="color:var(--text-body);">{{ item.text }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-3);">
+                  <div style="font:var(--type-label); color:var(--text-primary);">Nice to have</div>
+                  <sc-for list="{{ niceToHave }}" as="item" hint-placeholder-count="2">
+                    <div style="display:flex; gap:var(--space-3); align-items:flex-start;">
+                      <span style="width:6px; height:6px; border-radius:50%; background:var(--text-tertiary); margin-top:7px; flex:none;"></span>
+                      <span style="color:var(--text-body);">{{ item.text }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="background:var(--bg-inset); border-radius:var(--radius-card); padding:var(--space-4) var(--space-5); font:var(--type-caption); color:var(--text-secondary);">Raw review JSON is available under Files. Category scores come from the review model; the weighted total is computed locally.</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabIsRevisions }}" hint-placeholder-val="{{ false }}">
+            <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-5);">
+              <div style="font:var(--type-title-3); letter-spacing:var(--tracking-heading); color:var(--text-primary);">Revision history</div>
+              <div style="display:grid; gap:var(--space-5);">
+                <sc-for list="{{ revisions }}" as="rev" hint-placeholder-count="3">
+                  <div style="display:grid; grid-template-columns:120px 1fr; gap:var(--space-5); align-items:start;">
+                    <div style="display:grid; gap:2px;">
+                      <div style="font:var(--type-label); color:var(--text-primary);">{{ rev.title }}</div>
+                      <div style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">{{ rev.time }}</div>
+                    </div>
+                    <div style="border-left:1px solid var(--border-default); padding-left:var(--space-5); display:grid; gap:var(--space-3);">
+                      <div style="display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap;">
+                        <span style="font-family:var(--font-mono); font-size:var(--text-14); color:var(--text-primary);">{{ rev.scores }}</span>
+                        <x-import component-from-global-scope="AreyDesignSystem_1909f9.Badge" hint-size="auto,20px" tone="{{ rev.tone }}" size="sm">{{ rev.verdict }}</x-import>
+                        <span style="font:var(--type-caption); color:var(--text-secondary);">{{ rev.model }}</span>
+                      </div>
+                      <div style="color:var(--text-body);">{{ rev.summary }}</div>
+                      <div style="display:flex; gap:var(--space-2); flex-wrap:wrap;">
+                        <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,28px" size="sm" variant="ghost" icon-left="git-diff">View diff</x-import>
+                        <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,28px" size="sm" variant="ghost" icon-left="arrow-counter-clockwise">Restore</x-import>
+                      </div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabIsJd }}" hint-placeholder-val="{{ false }}">
+            <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); overflow:hidden;">
+              <div style="display:flex; align-items:center; gap:var(--space-3); padding:var(--space-4) var(--space-5); border-bottom:1px solid var(--border-subtle);">
+                <div style="font:var(--type-label); color:var(--text-primary);">Job description</div>
+                <span style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">4,182 characters · fetched from URL</span>
+                <span style="margin-left:auto;"><x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,28px" size="sm" variant="ghost" icon-left="arrow-square-out">Open posting</x-import></span>
+              </div>
+              <div style="padding:var(--space-6); max-height:520px; overflow:auto; color:var(--text-body); display:grid; gap:var(--space-4); max-width:var(--prose-max);">
+                <p style="margin:0;">Expedia Group is hiring a Software Engineer III to build and own backend services for the traveller platform. You will work across Java and Kotlin services, event-driven pipelines, and search infrastructure serving millions of requests a day.</p>
+                <p style="margin:0;">Requirements: strong JVM engineering experience, production ownership of distributed services, familiarity with Kafka, OpenSearch or Elasticsearch, and relational or document stores such as MSSQL or Couchbase. Experience mentoring engineers and leading architecture reviews is preferred.</p>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabIsFiles }}" hint-placeholder-val="{{ false }}">
+            <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); overflow:hidden;">
+              <sc-for list="{{ files }}" as="file" hint-placeholder-count="6">
+                <div style="display:flex; align-items:center; gap:var(--space-4); padding:var(--space-4) var(--space-5); border-bottom:1px solid var(--border-subtle);">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Icon" hint-size="16px,16px" name="{{ file.icon }}" size="16px"></x-import>
+                  <span style="font:var(--type-label); font-family:var(--font-mono); color:var(--text-primary); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ file.name }}</span>
+                  <span style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">{{ file.size }}</span>
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,28px" size="sm" variant="ghost" icon-left="download-simple">Download</x-import>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Profile" style="display:grid; gap:var(--space-6);">
+          <div>
+            <h1 style="font:var(--type-title-1); letter-spacing:var(--tracking-heading); color:var(--text-primary); margin:0;">Source of truth</h1>
+            <p style="margin:var(--space-2) 0 0; color:var(--text-secondary); max-width:var(--prose-max);">Every resume is written only from what is here. A skill can only appear on a resume if it is linked to at least one piece of evidence.</p>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:var(--space-6); align-items:start;">
+            <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-4);">
+              <div style="display:flex; align-items:center; gap:var(--space-3);">
+                <div style="font:var(--type-title-3); letter-spacing:var(--tracking-heading); color:var(--text-primary);">Skills</div>
+                <span style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">24 linked · 3 unevidenced</span>
+                <span style="margin-left:auto;"><x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,28px" size="sm" variant="secondary" icon-left="plus">Add skill</x-import></span>
+              </div>
+              <div style="display:grid; gap:var(--space-2);">
+                <sc-for list="{{ skills }}" as="skill" hint-placeholder-count="7">
+                  <div style="display:flex; align-items:center; gap:var(--space-3); padding:var(--space-3); border:1px solid var(--border-subtle); border-radius:var(--radius-control);">
+                    <span style="font:var(--type-label); font-family:var(--font-mono); color:var(--text-primary); flex:1; min-width:0;">{{ skill.name }}</span>
+                    <span style="font:var(--type-caption); color:{{ skill.color }};">{{ skill.evidence }}</span>
+                    <x-import component-from-global-scope="AreyDesignSystem_1909f9.Icon" hint-size="14px,14px" name="caret-right" size="14px"></x-import>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display:grid; gap:var(--space-4);">
+              <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-4);">
+                <div style="display:flex; align-items:center; gap:var(--space-3);">
+                  <div style="font:var(--type-title-3); letter-spacing:var(--tracking-heading); color:var(--text-primary);">Experience</div>
+                  <span style="margin-left:auto;"><x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,28px" size="sm" variant="secondary" icon-left="plus">Add role</x-import></span>
+                </div>
+                <sc-for list="{{ experience }}" as="role" hint-placeholder-count="2">
+                  <div style="display:grid; gap:var(--space-3); padding-bottom:var(--space-4); border-bottom:1px solid var(--border-subtle);">
+                    <div style="display:flex; align-items:baseline; gap:var(--space-3); flex-wrap:wrap;">
+                      <span style="font:var(--type-label); color:var(--text-primary);">{{ role.title }}</span>
+                      <span style="color:var(--text-secondary); font:var(--type-caption);">{{ role.company }}</span>
+                      <span style="margin-left:auto; font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">{{ role.dates }}</span>
+                    </div>
+                    <div style="display:grid; gap:var(--space-2);">
+                      <sc-for list="{{ role.bullets }}" as="b" hint-placeholder-count="2">
+                        <div style="display:flex; gap:var(--space-3); align-items:flex-start;">
+                          <span style="width:6px; height:6px; border-radius:50%; background:var(--text-tertiary); margin-top:8px; flex:none;"></span>
+                          <div style="flex:1; min-width:0;">
+                            <div style="color:var(--text-body);">{{ b.text }}</div>
+                            <div style="display:flex; gap:var(--space-2); margin-top:var(--space-2); flex-wrap:wrap;">
+                              <sc-for list="{{ b.tags }}" as="t" hint-placeholder-count="3">
+                                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Tag" hint-size="auto,24px">{{ t.name }}</x-import>
+                              </sc-for>
+                            </div>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-4);">
+                <div>
+                  <div style="font:var(--type-title-3); letter-spacing:var(--tracking-heading); color:var(--text-primary);">Your prompts</div>
+                  <p style="margin:var(--space-2) 0 0; color:var(--text-secondary);">Generation, review, and ATS prompts are yours to edit. Your edits apply to your runs only.</p>
+                </div>
+                <div style="display:grid; gap:var(--space-2);">
+                  <div style="display:flex; justify-content:space-between; gap:var(--space-4); font:var(--type-caption); color:var(--text-secondary);"><span>Edited by you</span><span style="font-family:var(--font-mono); color:var(--text-body);">2 of 6</span></div>
+                  <div style="display:flex; justify-content:space-between; gap:var(--space-4); font:var(--type-caption); color:var(--text-secondary);"><span>Last change</span><span style="font-family:var(--font-mono); color:var(--text-body);">4 d ago</span></div>
+                </div>
+                <span><x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="secondary" icon-left="terminal-window" on-click="{{ gotoPrompts }}">Open prompts</x-import></span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isPrompts }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Prompts" style="display:grid; gap:var(--space-6);">
+          <div>
+            <h1 style="font:var(--type-title-1); letter-spacing:var(--tracking-heading); color:var(--text-primary); margin:0;">Prompts</h1>
+            <p style="margin:var(--space-2) 0 0; color:var(--text-secondary); max-width:var(--prose-max);">Every stage of the run has its own prompt. Edit any of them; your version replaces the default for your account only. Variables are substituted at run time — leave the ones you need in place.</p>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:var(--space-6); align-items:start;">
+            <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--space-4); display:grid; gap:var(--space-2); align-content:start;">
+              <sc-for list="{{ prompts }}" as="p" hint-placeholder-count="6">
+                <div onClick="{{ p.select }}" style="{{ p.rowStyle }}">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Icon" hint-size="16px,16px" name="{{ p.icon }}" size="16px"></x-import>
+                  <div style="flex:1; min-width:0;">
+                    <div style="font:var(--type-label); color:{{ p.titleColor }};">{{ p.title }}</div>
+                    <div style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ p.file }}</div>
+                  </div>
+                  <sc-if value="{{ p.edited }}" hint-placeholder-val="{{ false }}">
+                    <x-import component-from-global-scope="AreyDesignSystem_1909f9.Badge" hint-size="auto,20px" tone="accent" size="sm">Edited</x-import>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); overflow:hidden; display:grid;">
+              <div style="display:flex; align-items:center; gap:var(--space-3); padding:var(--space-4) var(--space-5); border-bottom:1px solid var(--border-subtle); flex-wrap:wrap;">
+                <div>
+                  <div style="font:var(--type-label); color:var(--text-primary);">{{ activePrompt.title }}</div>
+                  <div style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">{{ activePrompt.meta }}</div>
+                </div>
+                <span style="margin-left:auto; display:flex; gap:var(--space-2);">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,28px" size="sm" variant="ghost" icon-left="arrow-counter-clockwise">Reset to default</x-import>
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,28px" size="sm" variant="primary">Save prompt</x-import>
+                </span>
+              </div>
+              <div style="padding:var(--space-5); display:grid; gap:var(--space-4);">
+                <p style="margin:0; color:var(--text-body);">{{ activePrompt.desc }}</p>
+                <div style="display:grid; gap:var(--space-2);">
+                  <div style="font:var(--type-eyebrow); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-tertiary);">Variables</div>
+                  <div style="display:flex; gap:var(--space-2); flex-wrap:wrap;">
+                    <sc-for list="{{ activePrompt.vars }}" as="v" hint-placeholder-count="4">
+                      <x-import component-from-global-scope="AreyDesignSystem_1909f9.Tag" hint-size="auto,24px" mono="{{ true }}">{{ v.name }}</x-import>
+                    </sc-for>
+                  </div>
+                </div>
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,320px" label="Your prompt" hint="Strict JSON contracts are enforced after the model responds. If your edit removes a required field, the run fails at review and tells you which field is missing.">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Textarea" hint-size="100%,300px" mono="{{ true }}" rows="16" value="{{ activePrompt.body }}" on-change="{{ setPromptBody }}"></x-import>
+                </x-import>
+                <div style="display:flex; align-items:center; gap:var(--space-3); padding-top:var(--space-3); border-top:1px solid var(--border-subtle); flex-wrap:wrap;">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Icon" hint-size="16px,16px" name="git-diff" size="16px"></x-import>
+                  <span style="font:var(--type-caption); color:var(--text-secondary);">{{ activePrompt.diff }}</span>
+                  <span style="margin-left:auto;"><x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,28px" size="sm" variant="ghost">Compare with default</x-import></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isTemplates }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Templates" style="display:grid; gap:var(--space-6);">
+          <div style="display:flex; align-items:flex-end; gap:var(--space-4); flex-wrap:wrap;">
+            <div style="flex:1; min-width:240px;">
+              <h1 style="font:var(--type-title-1); letter-spacing:var(--tracking-heading); color:var(--text-primary); margin:0;">Templates</h1>
+              <p style="margin:var(--space-2) 0 0; color:var(--text-secondary); max-width:var(--prose-max);">LaTeX bases the generator writes into. Auto picks one from the job description unless you choose.</p>
+            </div>
+            <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="primary" icon-left="plus" on-click="{{ openNewTemplate }}">New template</x-import>
+          </div>
+
+          <sc-if value="{{ newTemplateOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-5);">
+              <div style="display:flex; align-items:flex-start; gap:var(--space-4);">
+                <div style="flex:1; min-width:0;">
+                  <div style="font:var(--type-title-3); letter-spacing:var(--tracking-heading); color:var(--text-primary);">New template</div>
+                  <p style="margin:var(--space-2) 0 0; color:var(--text-secondary); max-width:var(--prose-max);">A template is a complete LaTeX document. The generator preserves its packages, macros, section order, and spacing, and only replaces content.</p>
+                </div>
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.IconButton" hint-size="36px,36px" icon="x" label="Close" variant="ghost" on-click="{{ closeNewTemplate }}"></x-import>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:var(--space-4);">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Name" hint="Lowercase, hyphenated. Used as the file name.">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Input" hint-size="100%,36px" mono="{{ true }}" placeholder="staff-platform"></x-import>
+                </x-import>
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Start from">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Select" hint-size="100%,36px" options="{{ startFromOptions }}" value="{{ startFrom }}" on-change="{{ setStartFrom }}"></x-import>
+                </x-import>
+              </div>
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="When to use it" hint="Shown in the picker and used by Auto when matching a job description.">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Input" hint-size="100%,36px" placeholder="Staff and principal roles where scope comes before stack"></x-import>
+              </x-import>
+
+              <sc-if value="{{ startFromUpload }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; align-items:center; gap:var(--space-4); padding:var(--space-5); border:1px dashed var(--border-strong); border-radius:var(--radius-control); background:var(--bg-subtle); flex-wrap:wrap;">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Icon" hint-size="20px,20px" name="file-text" size="20px"></x-import>
+                  <div style="flex:1; min-width:160px;">
+                    <div style="font:var(--type-label); color:var(--text-primary);">Upload a <span style="font-family:var(--font-mono);">.tex</span> file</div>
+                    <div style="font:var(--type-caption); color:var(--text-secondary);">Drop it here, or choose a file. We compile it once to check it builds.</div>
+                  </div>
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" size="sm" variant="secondary" icon-left="upload-simple">Choose file</x-import>
+                </div>
+              </sc-if>
+              <sc-if value="{{ startFromPaste }}" hint-placeholder-val="{{ false }}">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,180px" label="LaTeX source">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Textarea" hint-size="100%,140px" mono="{{ true }}" rows="8" placeholder="\documentclass[10pt]{article}"></x-import>
+                </x-import>
+              </sc-if>
+              <sc-if value="{{ startFromCopy }}" hint-placeholder-val="{{ false }}">
+                <div style="background:var(--bg-inset); border-radius:var(--radius-control); padding:var(--space-4) var(--space-5); font:var(--type-caption); color:var(--text-secondary);">A copy of <span style="font-family:var(--font-mono); color:var(--text-body);">backend-java</span> is created under your new name. Edit it after saving.</div>
+              </sc-if>
+
+              <div style="display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap; padding-top:var(--space-2); border-top:1px solid var(--border-subtle);">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="primary" on-click="{{ closeNewTemplate }}">Create template</x-import>
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="ghost" on-click="{{ closeNewTemplate }}">Cancel</x-import>
+                <span style="font:var(--type-caption); color:var(--text-secondary); margin-left:auto;">Your templates are private to your account.</span>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:var(--space-5);">
+            <sc-for list="{{ templates }}" as="tpl" hint-placeholder-count="5">
+              <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); overflow:hidden; display:grid;">
+                <div style="background:var(--bg-inset); aspect-ratio:1/1.15; display:flex; align-items:center; justify-content:center; color:var(--text-tertiary);">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Icon" hint-size="24px,24px" name="file-text" size="24px"></x-import>
+                </div>
+                <div style="padding:var(--space-5); display:grid; gap:var(--space-3);">
+                  <div style="display:flex; align-items:center; gap:var(--space-3);">
+                    <span style="font:var(--type-label); font-family:var(--font-mono); color:var(--text-primary);">{{ tpl.name }}</span>
+                    <sc-if value="{{ tpl.isDefault }}" hint-placeholder-val="{{ false }}">
+                      <x-import component-from-global-scope="AreyDesignSystem_1909f9.Badge" hint-size="auto,20px" tone="accent" size="sm">Default</x-import>
+                    </sc-if>
+                  </div>
+                  <div style="font:var(--type-caption); color:var(--text-secondary);">{{ tpl.desc }}</div>
+                  <div style="display:flex; align-items:center; gap:var(--space-3); padding-top:var(--space-2); border-top:1px solid var(--border-subtle);">
+                    <span style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">{{ tpl.uses }}</span>
+                    <span style="margin-left:auto;"><x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,28px" size="sm" variant="ghost">Edit</x-import></span>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+            <div onClick="{{ openNewTemplate }}" style="border:1px dashed var(--border-strong); border-radius:var(--radius-card); background:var(--bg-subtle); min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:var(--space-3); cursor:pointer; color:var(--text-secondary); padding:var(--space-5); text-align:center;">
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Icon" hint-size="24px,24px" name="plus" size="24px"></x-import>
+              <div style="font:var(--type-label); color:var(--text-primary);">New template</div>
+              <div style="font:var(--type-caption); color:var(--text-secondary); max-width:24ch;">Upload a <span style="font-family:var(--font-mono);">.tex</span> file, paste LaTeX, or copy an existing one.</div>
+            </div>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Settings" style="display:grid; gap:var(--space-6); max-width:900px;">
+          <div>
+            <h1 style="font:var(--type-title-1); letter-spacing:var(--tracking-heading); color:var(--text-primary); margin:0;">Settings</h1>
+            <p style="margin:var(--space-2) 0 0; color:var(--text-secondary); max-width:var(--prose-max);">Keys are yours. They are encrypted per account and never shared between users.</p>
+          </div>
+
+          <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-4);">
+            <div style="font:var(--type-title-3); letter-spacing:var(--tracking-heading); color:var(--text-primary);">Account</div>
+            <div style="display:flex; align-items:center; gap:var(--space-4); flex-wrap:wrap;">
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Avatar" hint-size="36px,36px" name="Hamsa Vardhan" size="36"></x-import>
+              <div style="flex:1; min-width:180px;">
+                <div style="font:var(--type-label); color:var(--text-primary);">Hamsa Vardhan</div>
+                <div style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">hamsa@example.com</div>
+              </div>
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Badge" hint-size="auto,24px" tone="success" dot="{{ true }}">Google connected</x-import>
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="secondary" size="sm" icon-left="sign-out" on-click="{{ signOut }}">Sign out</x-import>
+            </div>
+            <div style="display:grid; gap:var(--space-2); padding-top:var(--space-3); border-top:1px solid var(--border-subtle); font:var(--type-caption); color:var(--text-secondary);">
+              <div style="display:flex; justify-content:space-between; gap:var(--space-4);"><span>Signed in</span><span style="font-family:var(--font-mono); color:var(--text-body);">2026-07-31 09:14 UTC</span></div>
+              <div style="display:flex; justify-content:space-between; gap:var(--space-4);"><span>Account id</span><span style="font-family:var(--font-mono); color:var(--text-body);">usr_a3f91c8</span></div>
+              <div style="display:flex; justify-content:space-between; gap:var(--space-4);"><span>Data scope</span><span style="font-family:var(--font-mono); color:var(--text-body);">this account only</span></div>
+            </div>
+          </div>
+
+          <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-5);">
+            <div style="font:var(--type-title-3); letter-spacing:var(--tracking-heading); color:var(--text-primary);">Provider keys</div>
+            <sc-for list="{{ keys }}" as="k" hint-placeholder-count="3">
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:var(--space-4); align-items:end; padding-bottom:var(--space-4); border-bottom:1px solid var(--border-subtle);">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="{{ k.label }}" hint="{{ k.hint }}">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Input" hint-size="100%,36px" mono="{{ true }}" type="password" default-value="{{ k.value }}"></x-import>
+                </x-import>
+                <div style="display:flex; align-items:center; gap:var(--space-3);">
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Badge" hint-size="auto,24px" tone="{{ k.tone }}" dot="{{ true }}">{{ k.status }}</x-import>
+                  <x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,36px" variant="secondary" size="sm">Test</x-import>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-5);">
+            <div style="font:var(--type-title-3); letter-spacing:var(--tracking-heading); color:var(--text-primary);">Default models</div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:var(--space-4);">
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Generation">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Select" hint-size="100%,36px" options="{{ genModels }}"></x-import>
+              </x-import>
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Revision">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Select" hint-size="100%,36px" options="{{ genModels }}"></x-import>
+              </x-import>
+              <x-import component-from-global-scope="AreyDesignSystem_1909f9.Field" hint-size="100%,64px" label="Review">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Select" hint-size="100%,36px" options="{{ reviewModels }}"></x-import>
+              </x-import>
+            </div>
+            <div style="display:grid; gap:var(--space-3); padding-top:var(--space-2); border-top:1px solid var(--border-subtle);">
+              <label style="display:flex; align-items:center; gap:var(--space-3); font:var(--type-label); color:var(--text-body); cursor:pointer;">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Switch" hint-size="40px,24px" checked="{{ true }}"></x-import>
+                Revise automatically when the review score is below <span style="font-family:var(--font-mono);">8.0</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:var(--space-3); font:var(--type-label); color:var(--text-body); cursor:pointer;">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Switch" hint-size="40px,24px"></x-import>
+                Send run traces to LangSmith
+              </label>
+            </div>
+          </div>
+
+          <div style="background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-card); box-shadow:var(--shadow-md); padding:var(--pad-card); display:grid; gap:var(--space-4);">
+            <div style="display:flex; align-items:center; gap:var(--space-3);">
+              <div style="font:var(--type-title-3); letter-spacing:var(--tracking-heading); color:var(--text-primary);">Members</div>
+              <span style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">invite only · 4 of 10 seats</span>
+              <span style="margin-left:auto;"><x-import component-from-global-scope="AreyDesignSystem_1909f9.Button" hint-size="auto,28px" size="sm" variant="secondary" icon-left="paper-plane-tilt">Invite</x-import></span>
+            </div>
+            <sc-for list="{{ members }}" as="m" hint-placeholder-count="4">
+              <div style="display:flex; align-items:center; gap:var(--space-4); padding:var(--space-3) 0; border-bottom:1px solid var(--border-subtle);">
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Avatar" hint-size="28px,28px" name="{{ m.name }}" size="28"></x-import>
+                <div style="flex:1; min-width:0;">
+                  <div style="font:var(--type-label); color:var(--text-primary);">{{ m.name }}</div>
+                  <div style="font:var(--type-caption); font-family:var(--font-mono); color:var(--text-tertiary);">{{ m.email }}</div>
+                </div>
+                <span style="font:var(--type-caption); color:var(--text-secondary);">{{ m.apps }}</span>
+                <x-import component-from-global-scope="AreyDesignSystem_1909f9.Badge" hint-size="auto,24px" tone="{{ m.tone }}" size="sm">{{ m.state }}</x-import>
+              </div>
+            </sc-for>
+            <div style="font:var(--type-caption); color:var(--text-secondary);">Members see only their own applications, profile, and keys.</div>
+          </div>
+        </section>
+      </sc-if>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultTheme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Appearance&quot;},&quot;atsThreshold&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:80,&quot;min&quot;:50,&quot;max&quot;:100,&quot;step&quot;:5,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Scoring&quot;}}">
+class Component extends DCLogic {
+  state = {
+    theme: null, screen: 'pipeline', filter: 'all', resultTab: 'resume', doc: 'resume',
+    jdSource: 'Paste', running: false, step: 0, open: {}, narrow: false, drawerOpen: false,
+    signedOut: false, promptKey: 'generator', promptBodies: null,
+    newTemplateOpen: false, startFrom: 'upload'
+  };
+
+  static PROMPTS = [
+    {
+      key: 'brief', title: 'Targeting brief', file: 'targeting_brief.md', icon: 'crosshair', edited: false,
+      desc: 'Runs first. Reads the job description against your source of truth and decides positioning, tone, keyword strategy, and what must never be claimed.',
+      vars: ['{{COMPANY_NAME}}', '{{JOB_TITLE}}', '{{JD_TEXT}}', '{{SOURCE_OF_TRUTH}}'],
+      diff: 'Using the default. No local changes.',
+      body: 'Read the job description against the candidate source of truth and return a targeting brief as strict JSON.\n\nDecide:\n- role_level and tone\n- positioning_statement (two sentences, no adjectives without evidence)\n- grounded_keywords: present in the source of truth\n- learning_signal_keywords: adjacent evidence only\n- forbidden_claims: anything the JD asks for that the candidate cannot support\n- seniority_verbs_to_use and seniority_verbs_to_avoid\n- evidence_map: JD requirement to candidate evidence'
+    },
+    {
+      key: 'generator', title: 'Resume generation', file: 'generator.md', icon: 'file-text', edited: true,
+      desc: 'Implements the targeting brief inside your chosen LaTeX template. It does not analyse the job — that is the brief\u2019s work.',
+      vars: ['{{TARGETING_BRIEF}}', '{{JD_TEXT}}', '{{BASE_RESUME_TEX}}', '{{SOURCE_OF_TRUTH}}'],
+      diff: '3 lines added, 1 removed against the default.',
+      body: 'You are implementing a pre-approved resume strategy inside a LaTeX template. Return only a complete LaTeX document.\n\nTARGETING BRIEF (implement this exactly):\n{{TARGETING_BRIEF}}\n\nSelected base resume LaTeX:\n{{BASE_RESUME_TEX}}\n\nCandidate source of truth:\n{{SOURCE_OF_TRUTH}}\n\nSTRUCTURE\n- Preserve the documentclass, packages, macros, section order, and spacing exactly.\n\nCONTENT\n- Every bullet maps to a specific entry in the evidence_map. If a requirement has no evidence, do not invent it.\n- Use grounded_keywords confidently. Frame learning_signal_keywords as exposure, never as ownership.\n\nMY RULES\n- Lead every bullet with the outcome, then the mechanism.\n- I mentored, I did not manage. Never write "led the team".\n- Never use leverage, spearheaded, or synergy.'
+    },
+    {
+      key: 'cover', title: 'Cover letter', file: 'cover_letter.md', icon: 'envelope-simple', edited: false,
+      desc: 'Written after the resume passes review, from the same brief and evidence.',
+      vars: ['{{COMPANY_NAME}}', '{{JOB_TITLE}}', '{{TARGETING_BRIEF}}', '{{RESUME_TEX}}'],
+      diff: 'Using the default. No local changes.',
+      body: 'Write a one-page cover letter as a complete LaTeX document.\n\nRules:\n- Three paragraphs: why this company, the single most relevant piece of evidence, what you want to work on.\n- Reuse only evidence already present in the resume.\n- No restating the resume line by line. No adjectives without a number behind them.'
+    },
+    {
+      key: 'reviewer', title: 'Review', file: 'reviewer.md', icon: 'magnifying-glass', edited: true,
+      desc: 'Scores the resume by category and returns must-fix items. Category scores come from the model; the weighted total is computed locally, so score weights are not editable here.',
+      vars: ['{{COMPANY_NAME}}', '{{JOB_TITLE}}', '{{REVISION_COUNT}}', '{{TARGETING_BRIEF}}', '{{JD_TEXT}}', '{{SOURCE_OF_TRUTH}}', '{{PREVIOUS_MUST_FIX}}', '{{RESUME_TEX}}'],
+      diff: '1 line added against the default.',
+      body: 'Review the resume against the JD, targeting brief, and source of truth. Return strict JSON only.\n\nCategory scores are 0\u201310, no arithmetic, strict and realistic:\n- jd_skills_keyword_match\n- role_domain_relevance\n- achievement_evidence_strength\n- credibility_source_truth_compliance\n- ats_latex_formatting_safety\n- recruiter_impression_seniority_alignment\n- targeting_brief_compliance\n- single_page_compliance\n\nAlso return: verdict, brutal_recruiter_opinion, must_fix, nice_to_have, ats_risks, missing_keywords, credibility_risks, fix_resolution.\n\nPenalise weak JD match, vague evidence, unsupported claims, formatting drift, and page overflow.\n\nMY RULES\n- Treat any mentoring claim without a number as a must-fix.'
+    },
+    {
+      key: 'reviser', title: 'Revision', file: 'reviser.md', icon: 'pencil-simple', edited: false,
+      desc: 'Runs only when the review score is below your threshold. Fixes the must-fix list without touching anything else.',
+      vars: ['{{RESUME_TEX}}', '{{PREVIOUS_MUST_FIX}}', '{{TARGETING_BRIEF}}', '{{SOURCE_OF_TRUTH}}'],
+      diff: 'Using the default. No local changes.',
+      body: 'Revise the resume to address every must-fix item. Return only a complete LaTeX document.\n\n- Change nothing that was not flagged.\n- Do not add evidence that is absent from the source of truth.\n- Keep the document to one page.'
+    },
+    {
+      key: 'ats', title: 'ATS extraction', file: 'ats_checker.md', icon: 'target', edited: false,
+      desc: 'Extracts required, preferred, and nice-to-have keywords plus hard requirements from the job description. Keyword, structural, and semantic scores are computed locally from this extraction.',
+      vars: ['{{JD_TEXT}}', '{{RESUME_TEXT}}'],
+      diff: 'Using the default. No local changes.',
+      body: 'Extract the screening criteria from the job description as strict JSON.\n\nReturn:\n- required_keywords, preferred_keywords, nice_to_have_keywords\n- hard_requirements: [{ description, met, confidence }]\n- section_expectations: the headings an ATS will look for\n\nRules:\n- A keyword is required only if the JD states it as a requirement, not a preference.\n- Normalise variants to one canonical form (k8s to Kubernetes).\n- Never mark a hard requirement met unless the resume text names the evidence.'
+    }
+  ];
+
+  componentDidMount() {
+    this._onResize = () => {
+      const n = window.innerWidth < 940;
+      if (n !== this.state.narrow) this.setState({ narrow: n, drawerOpen: false });
+    };
+    this._onResize();
+    window.addEventListener('resize', this._onResize);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this._onResize);
+    if (this._timer) clearInterval(this._timer);
+  }
+
+  startRun = () => {
+    if (this.state.running) return;
+    this.setState({ running: true, step: 0 });
+    this._timer = setInterval(() => {
+      const next = this.state.step + 1;
+      if (next >= 8) {
+        clearInterval(this._timer);
+        this.setState({ running: false, step: 8, screen: 'result', resultTab: 'resume' });
+      } else {
+        this.setState({ step: next });
+      }
+    }, 700);
+  };
+
+  renderVals() {
+    const theme = this.state.theme || this.props.defaultTheme || 'light';
+    const s = this.state;
+    const pass = Number(this.props.atsThreshold ?? 80);
+
+    const stepDefs = [
+      ['Fetching job description', '4,182 chars'],
+      ['Loading templates and instructions', 'backend-java'],
+      ['Building targeting strategy', '18 keywords'],
+      ['Writing resume', 'gpt-5.6-sol'],
+      ['Reviewing documents', 'pass 1 · 8.1'],
+      ['Revising documents', '3 must-fix'],
+      ['Writing cover letter', '1 pass'],
+      ['Compiling PDFs', 'latexmk · 1.2 s']
+    ];
+    const steps = stepDefs.map((d, i) => {
+      const done = s.step > i || (!s.running && s.step >= 8);
+      const active = s.running && s.step === i;
+      return {
+        label: d[0],
+        meta: done ? d[1] : active ? 'running' : '',
+        color: done || active ? 'var(--text-primary)' : 'var(--text-tertiary)',
+        dotStyle: {
+          width: 8, height: 8, borderRadius: '50%', flex: 'none',
+          background: done ? 'var(--success-solid)' : active ? 'var(--accent-solid)' : 'var(--border-strong)',
+          boxShadow: active ? '0 0 0 4px var(--accent-wash)' : 'none'
+        }
+      };
+    });
+
+    const appData = [
+      ['Software Engineer III', 'Expedia', 'Applied', 'accent', 58, '8.7', '', '3 d ago', 'tailored'],
+      ['Staff Software Engineer', 'Elyos', 'Interviewing', 'warning', 74, '8.7', 'Technical (1 of 3)', '6 h ago', 'tailored'],
+      ['Senior Backend Engineer', 'Wise', 'Applied', 'accent', 71, '8.2', '', '7 d ago', 'imported'],
+      ['Senior Software Engineer, Personalisation', 'Marks & Spencer', 'Applied', 'accent', 81, '8.9', '', '1 d ago', 'tailored'],
+      ['Senior Software Engineer, Web Platform', 'Marks & Spencer', 'Draft', 'neutral', 63, '8.6', '', '2 d ago', 'tailored'],
+      ['Platform Engineer', 'Cleo', 'Rejected', 'danger', 66, '8.0', 'Round 2 of 3', '11 d ago', 'imported'],
+      ['Backend Engineer III', 'Monzo', 'Applied', 'accent', 88, '9.2', '', '9 d ago', 'tailored']
+    ];
+    const applications = appData.map((a, i) => ({
+      role: a[0], company: a[1], status: a[2], tone: a[3],
+      ats: String(a[4]), review: a[5], round: a[6] || '—', updated: a[7], origin: a[8],
+      atsColor: a[4] >= pass ? 'var(--success-text)' : 'var(--danger-text)',
+      open: () => this.setState({ screen: 'result', resultTab: 'resume' }),
+      rowStyle: {
+        display: 'grid',
+        gridTemplateColumns: 'minmax(220px,2.4fr) 116px 92px 92px minmax(120px,1fr) 96px',
+        gap: 'var(--space-4)', alignItems: 'center', cursor: 'pointer',
+        padding: 'var(--space-4) var(--space-6)',
+        borderBottom: i === appData.length - 1 ? 'none' : '1px solid var(--border-subtle)'
+      }
+    }));
+
+    const toggle = (name) => () => this.setState({ open: { ...s.open, [name]: !s.open[name] } });
+    const missingRequired = [
+      ['Kotlin', 'Required · appears 4 times in the JD'],
+      ['Couchbase', 'Required · listed under data stores'],
+      ['MSSQL', 'Required · listed under data stores']
+    ].map(([name, note]) => ({
+      name, note,
+      open: !!s.open[name],
+      toggle: toggle(name),
+      icon: s.open[name] ? 'x' : 'plus',
+      action: s.open[name] ? 'Close' : 'Add evidence'
+    }));
+
+    const catDefs = [
+      ['JD skills and keywords', 8.5], ['Role and domain relevance', 8.8],
+      ['Achievement and evidence', 9.0], ['Credibility', 9.2],
+      ['ATS and formatting safety', 7.4], ['Recruiter impression', 8.6]
+    ];
+
+    const hardDefs = [
+      ['5+ years JVM engineering', true, 'confidence 96%'],
+      ['Production ownership of distributed services', true, 'confidence 91%'],
+      ['Kafka or equivalent event streaming', true, 'confidence 88%'],
+      ['Couchbase or MSSQL exposure', false, 'confidence 12%']
+    ];
+
+    return {
+      theme,
+      themeIcon: theme === 'dark' ? 'sun' : 'moon',
+      toggleTheme: () => this.setState({ theme: theme === 'dark' ? 'light' : 'dark' }),
+      sidebarStyle: {
+        width: 'var(--sidebar-w)', flex: 'none', display: s.narrow ? 'none' : 'flex',
+        flexDirection: 'column', position: 'sticky', top: 0, height: '100vh',
+        background: 'var(--bg-base)', borderRight: '1px solid var(--border-subtle)'
+      },
+      navGroups: [
+        { label: 'Workspace', items: [
+          { value: 'pipeline', label: 'Pipeline', icon: 'squares-four', count: 7 },
+          { value: 'new', label: 'New application', icon: 'sparkle' },
+          { value: 'import', label: 'Import application', icon: 'upload-simple' },
+          { value: 'result', label: 'Expedia · SDE III', icon: 'file-text' }
+        ] },
+        { label: 'Your material', items: [
+          { value: 'profile', label: 'Source of truth', icon: 'user-circle' },
+          { value: 'prompts', label: 'Prompts', icon: 'terminal-window', count: 6 },
+          { value: 'templates', label: 'Templates', icon: 'stack', count: 5 }
+        ] },
+        { label: 'Account', items: [
+          { value: 'settings', label: 'Settings', icon: 'gear' }
+        ] }
+      ],
+      drawerOpen: s.narrow && s.drawerOpen,
+      menuTriggerStyle: { display: s.narrow ? 'inline-flex' : 'none' },
+      openDrawer: () => this.setState({ drawerOpen: true }),
+      closeDrawer: () => this.setState({ drawerOpen: false }),
+      gotoAndClose: (v) => this.setState({ screen: v, drawerOpen: false }),
+      screen: s.screen,
+      goto: (v) => this.setState({ screen: v }),
+      gotoNew: () => this.setState({ screen: 'new' }),
+      gotoAts: () => this.setState({ resultTab: 'ats' }),
+      gotoPrompts: () => this.setState({ screen: 'prompts' }),
+      gotoImport: () => this.setState({ screen: 'import' }),
+      gotoResult: () => this.setState({ screen: 'result', resultTab: 'resume' }),
+      isImport: s.screen === 'import',
+      statusOptions: ['Draft', 'Applied', 'Interviewing', 'Offer', 'Rejected', 'Archived'],
+      uploadSlots: [
+        { icon: 'file-text', label: 'Resume', hint: 'Required. PDF, or .tex if you want to edit it here.' },
+        { icon: 'envelope-simple', label: 'Cover letter', hint: 'Optional. PDF or .tex.' }
+      ],
+      importSteps: [
+        { icon: 'target', label: 'ATS check', desc: 'Keyword, structural, and semantic scores against the job description you paste.' },
+        { icon: 'magnifying-glass', label: 'Review', desc: 'The same category rubric and recruiter read your tailored resumes get.' },
+        { icon: 'user-circle', label: 'Source-of-truth match', desc: 'Flags claims in the uploaded resume that your profile cannot evidence.' },
+        { icon: 'kanban', label: 'Added to pipeline', desc: 'Tracked with status, rounds, next action, and notes.' }
+      ],
+      newTemplateOpen: s.newTemplateOpen,
+      openNewTemplate: () => this.setState({ screen: 'templates', newTemplateOpen: true }),
+      closeNewTemplate: () => this.setState({ newTemplateOpen: false }),
+      startFrom: s.startFrom,
+      setStartFrom: (e) => this.setState({ startFrom: e.target.value }),
+      startFromOptions: [
+        { value: 'upload', label: 'Upload a .tex file' },
+        { value: 'paste', label: 'Paste LaTeX' },
+        { value: 'copy', label: 'Copy backend-java' }
+      ],
+      startFromUpload: s.startFrom === 'upload',
+      startFromPaste: s.startFrom === 'paste',
+      startFromCopy: s.startFrom === 'copy',
+      signedOut: s.signedOut,
+      signIn: () => this.setState({ signedOut: false, screen: 'pipeline', loginOpen: false, interestOpen: false }),
+      signOut: () => this.setState({ signedOut: true, drawerOpen: false, loginOpen: false, interestOpen: false }),
+      loginOpen: !!s.loginOpen,
+      interestOpen: !!s.interestOpen,
+      openLogin: () => this.setState({ loginOpen: true, interestOpen: false }),
+      openInterest: () => this.setState({ interestOpen: true, loginOpen: false }),
+      closeDialogs: () => this.setState({ loginOpen: false, interestOpen: false }),
+      accounts: [
+        { name: 'Hamsa Vardhan', email: 'hamsa@example.com' },
+        { name: 'Hamsa V', email: 'hamsa.work@example.com' }
+      ],
+      keyAnswers: ['Yes, both OpenAI and Anthropic', 'One of the two', 'No, not yet'],
+      landingFlow: [
+        { n: '01', title: 'Paste the posting', desc: 'Or upload it, or give a URL. The brief is built before a single line is written.' },
+        { n: '02', title: 'Written into your template', desc: 'Your LaTeX base is preserved exactly — packages, macros, section order, spacing.' },
+        { n: '03', title: 'Reviewed and scored', desc: 'Category rubric, recruiter read, ATS keyword and structural analysis.' },
+        { n: '04', title: 'Revised, then tracked', desc: 'Only failing documents are revised. The application then lives in your pipeline.' }
+      ],
+      landingPoints: [
+        { icon: 'crosshair', title: 'Targeting before writing', desc: 'The posting is read first: positioning, tone, which keywords you can claim, and which you cannot.' },
+        { icon: 'target', title: 'Two scores, not a vibe', desc: 'An ATS score out of 100 and a review score out of 10, with the category breakdown behind both.' },
+        { icon: 'shield-check', title: 'Evidence or nothing', desc: 'A keyword only reaches your resume once you attach the company, the project, and what you did.' },
+        { icon: 'kanban', title: 'A tracker, not just a generator', desc: 'Import applications you wrote elsewhere and track status, rounds, and next actions in one pipeline.' }
+      ],
+      noop: () => {},
+      crumbRoot: { pipeline: 'Workspace', new: 'Workspace', import: 'Workspace', result: 'Workspace', profile: 'Your material', prompts: 'Your material', templates: 'Your material', settings: 'Account' }[s.screen],
+      crumbLeaf: { pipeline: 'Pipeline', new: 'New application', import: 'Import application', result: 'Expedia · Software Engineer III', profile: 'Source of truth', prompts: 'Prompts', templates: 'Templates', settings: 'Settings' }[s.screen],
+
+      isPipeline: s.screen === 'pipeline', isNew: s.screen === 'new', isResult: s.screen === 'result',
+      isProfile: s.screen === 'profile', isPrompts: s.screen === 'prompts',
+      isTemplates: s.screen === 'templates', isSettings: s.screen === 'settings',
+
+      prompts: Component.PROMPTS.map((p) => ({
+        title: p.title, file: p.file, icon: p.icon,
+        edited: p.edited || !!(s.promptBodies && s.promptBodies[p.key] != null),
+        select: () => this.setState({ promptKey: p.key }),
+        titleColor: s.promptKey === p.key ? 'var(--text-accent)' : 'var(--text-primary)',
+        rowStyle: {
+          display: 'flex', alignItems: 'center', gap: 'var(--space-3)', cursor: 'pointer',
+          padding: 'var(--space-3)', borderRadius: 'var(--radius-control)',
+          background: s.promptKey === p.key ? 'var(--bg-selected)' : 'transparent',
+          color: s.promptKey === p.key ? 'var(--text-accent)' : 'var(--text-secondary)'
+        }
+      })),
+      setPromptBody: (e) => {
+        const bodies = s.promptBodies || {};
+        this.setState({ promptBodies: { ...bodies, [s.promptKey]: e.target.value } });
+      },
+      activePrompt: (() => {
+        const p = Component.PROMPTS.find((x) => x.key === s.promptKey) || Component.PROMPTS[0];
+        const edited = s.promptBodies && s.promptBodies[p.key] != null;
+        return {
+          title: p.title, desc: p.desc, diff: p.diff,
+          body: edited ? s.promptBodies[p.key] : p.body,
+          meta: p.file + ' · ' + (p.edited ? 'your version' : 'default'),
+          vars: p.vars.map((name) => ({ name }))
+        };
+      })(),
+
+      filter: s.filter,
+      setFilter: (v) => this.setState({ filter: v }),
+      filterItems: [
+        { value: 'all', label: 'All', count: 7 }, { value: 'draft', label: 'Draft', count: 1 },
+        { value: 'applied', label: 'Applied', count: 4 }, { value: 'interviewing', label: 'Interviewing', count: 1 },
+        { value: 'closed', label: 'Closed', count: 1 }
+      ],
+      applications,
+
+      jdSource: s.jdSource,
+      setJdSource: (v) => this.setState({ jdSource: v }),
+      jdSourceOptions: ['Paste', 'Upload', 'URL'],
+      templateOptions: [
+        { value: 'auto', label: 'Auto — backend-java' }, 'frontend', 'backend-java',
+        'backend-python', 'fullstack', 'senior-engineer'
+      ],
+      running: s.running,
+      runLabel: s.running ? 'Generating' : 'Generate',
+      runStatus: s.running ? 'running' : s.step >= 8 ? 'complete' : 'idle',
+      runTone: s.running ? 'accent' : s.step >= 8 ? 'success' : 'neutral',
+      runPct: String(Math.round((s.step / 8) * 100)),
+      startRun: this.startRun,
+      steps,
+
+      resultTab: s.resultTab,
+      setResultTab: (v) => this.setState({ resultTab: v }),
+      resultTabs: [
+        { value: 'resume', label: 'Resume', icon: 'file-text' },
+        { value: 'ats', label: 'ATS', icon: 'target', count: 3 },
+        { value: 'review', label: 'Review', icon: 'magnifying-glass' },
+        { value: 'revisions', label: 'Revisions', icon: 'clock-counter-clockwise', count: 2 },
+        { value: 'jd', label: 'Job description', icon: 'briefcase' },
+        { value: 'files', label: 'Files', icon: 'folder' }
+      ],
+      tabIsResume: s.resultTab === 'resume', tabIsAts: s.resultTab === 'ats',
+      tabIsReview: s.resultTab === 'review', tabIsRevisions: s.resultTab === 'revisions',
+      tabIsJd: s.resultTab === 'jd', tabIsFiles: s.resultTab === 'files',
+      doc: s.doc,
+      setDoc: (v) => this.setState({ doc: v }),
+      docItems: [{ value: 'resume', label: 'Resume' }, { value: 'cover', label: 'Cover letter' }],
+
+      missingRequired,
+      sourceOptions: ['LivExtech — Senior Software Engineer', 'Presidio — Software Engineer', 'Side project'],
+      matched: ['Java', 'Kotlin', 'Kafka', 'OpenSearch', 'Redis', 'Spring Boot', 'AWS', 'Terraform', 'PostgreSQL', 'Observability', 'Mentoring', 'CI/CD'].map((n) => ({ name: n })),
+      hardReqs: hardDefs.map(([label, met, conf]) => ({
+        label, conf,
+        dotStyle: {
+          width: 8, height: 8, borderRadius: '50%', marginTop: 7, flex: 'none',
+          background: met ? 'var(--success-solid)' : 'var(--danger-solid)'
+        }
+      })),
+
+      categoryScores: catDefs.map(([label, score]) => ({
+        label, score: score.toFixed(1),
+        fillStyle: {
+          display: 'block', height: '100%', width: (score * 10) + '%',
+          borderRadius: 'var(--radius-full)',
+          background: score >= 8 ? 'var(--success-solid)' : 'var(--warning-solid)'
+        }
+      })),
+      mustFix: [
+        { text: 'Mentoring is claimed without an outcome. Add the number of engineers and what changed.' },
+        { text: 'Architecture review involvement is implied but never stated in a bullet.' }
+      ],
+      niceToHave: [
+        { text: 'Move the OpenSearch latency result into the first bullet of the current role.' },
+        { text: 'Name the event volume in the ingestion bullet — the JD asks for scale.' }
+      ],
+      revisions: [
+        { title: 'Revision 2', time: '14:02 UTC', scores: '8.7 / 10 · ATS 58', tone: 'success', verdict: 'pass', model: 'gpt-5.6-sol', summary: 'Rewrote the mentoring bullet with a concrete outcome and tightened the summary to two lines.' },
+        { title: 'Revision 1', time: '13:58 UTC', scores: '8.4 / 10 · ATS 54', tone: 'warning', verdict: 'below threshold', model: 'gpt-5.6-sol', summary: 'Addressed 2 of 3 must-fix items. Keyword coverage unchanged — required keywords still lack evidence.' },
+        { title: 'First draft', time: '13:55 UTC', scores: '8.1 / 10 · ATS 51', tone: 'danger', verdict: 'fail', model: 'gpt-5.6-sol', summary: 'Generated from the backend-java template against your source of truth.' }
+      ],
+      files: [
+        { icon: 'file-text', name: 'resume.tex', size: '18 KB' },
+        { icon: 'file-pdf', name: 'resume.pdf', size: '128 KB' },
+        { icon: 'file-text', name: 'cover_letter.tex', size: '6 KB' },
+        { icon: 'file-pdf', name: 'cover_letter.pdf', size: '74 KB' },
+        { icon: 'brackets-curly', name: 'review.json', size: '11 KB' },
+        { icon: 'file-md', name: 'job_description.md', size: '4 KB' }
+      ],
+
+      skills: [
+        ['Java', 6], ['Kotlin', 0], ['Kafka', 4], ['OpenSearch', 3],
+        ['Redis', 2], ['Couchbase', 0], ['MSSQL', 0]
+      ].map(([name, n]) => ({
+        name,
+        evidence: n ? n + ' bullets' : 'no evidence',
+        color: n ? 'var(--text-secondary)' : 'var(--danger-text)'
+      })),
+      experience: [
+        {
+          title: 'Senior Software Engineer', company: 'LivExtech', dates: '2023 — present',
+          bullets: [
+            { text: 'Cut OpenSearch p99 latency 42% by re-sharding the index and adding a Redis read-through cache.', tags: [{ name: 'OpenSearch' }, { name: 'Redis' }, { name: 'Performance' }] },
+            { text: 'Owned the ingestion service handling 3.1M events a day across 14 tenants.', tags: [{ name: 'Kafka' }, { name: 'Java' }] }
+          ]
+        },
+        {
+          title: 'Software Engineer', company: 'Presidio', dates: '2021 — 2023',
+          bullets: [
+            { text: 'Mentored 3 engineers through their first on-call rotations; incident MTTR fell from 48 to 19 minutes.', tags: [{ name: 'Mentoring' }, { name: 'Observability' }] }
+          ]
+        }
+      ],
+      templates: [
+        { name: 'backend-java', desc: 'JVM services, event pipelines, platform ownership.', uses: 'used in 4', isDefault: true },
+        { name: 'backend-python', desc: 'Python services, data tooling, ML adjacency.', uses: 'used in 1', isDefault: false },
+        { name: 'fullstack', desc: 'Balanced frontend and backend weighting.', uses: 'used in 2', isDefault: false },
+        { name: 'frontend', desc: 'Interface work, design systems, performance.', uses: 'unused', isDefault: false },
+        { name: 'senior-engineer', desc: 'Scope, ownership, and architecture framing first.', uses: 'used in 3', isDefault: false }
+      ],
+      keys: [
+        { label: 'OpenAI', hint: 'Used for generation and revision.', value: 'sk-proj-••••••••••••7f2a', tone: 'success', status: 'valid' },
+        { label: 'Anthropic', hint: 'Used for targeting and review.', value: 'sk-ant-••••••••••••b31c', tone: 'success', status: 'valid' },
+        { label: 'LangSmith', hint: 'Optional. Traces stay in your own project.', value: '', tone: 'neutral', status: 'not set' }
+      ],
+      genModels: ['gpt-5.6-sol', 'gpt-5.6-mini', 'claude-sonnet-4'],
+      reviewModels: ['claude-opus-4', 'claude-sonnet-4'],
+      members: [
+        { name: 'Hamsa Vardhan', email: 'hamsa@example.com', apps: '6 applications', tone: 'accent', state: 'owner' },
+        { name: 'Priya N', email: 'priya@example.com', apps: '3 applications', tone: 'success', state: 'active' },
+        { name: 'Dan Okoro', email: 'dan@example.com', apps: '1 application', tone: 'success', state: 'active' },
+        { name: 'Wei Zhang', email: 'wei@example.com', apps: 'no applications', tone: 'warning', state: 'invited' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

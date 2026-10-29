@@ -1,0 +1,28 @@
+/* arey motion. Everything eases out. Interactive feedback gets a light spring;
+   state changes (theme, disclosure of text) are near-instant opacity. */
+:root{
+  --ease-out:cubic-bezier(.22,1,.36,1); /* @kind other */
+  --ease-out-soft:cubic-bezier(.32,.72,0,1); /* @kind other */
+  --ease-standard:cubic-bezier(.4,0,.2,1); /* @kind other */
+  --ease-spring:cubic-bezier(.34,1.4,.64,1); /* @kind other */
+  --ease-in-out:cubic-bezier(.65,0,.35,1); /* @kind other */
+
+  --duration-instant:80ms; /* @kind other */
+  --duration-fast:140ms; /* @kind other */
+  --duration-normal:220ms; /* @kind other */
+  --duration-slow:320ms; /* @kind other */
+  --duration-slower:480ms; /* @kind other */
+
+  --transition-control:transform var(--duration-fast) var(--ease-spring),background-color var(--duration-fast) var(--ease-out),border-color var(--duration-fast) var(--ease-out),box-shadow var(--duration-fast) var(--ease-out),opacity var(--duration-fast) var(--ease-out);
+  --transition-surface:transform var(--duration-normal) var(--ease-out),opacity var(--duration-normal) var(--ease-out),box-shadow var(--duration-normal) var(--ease-out);
+  --press-scale:.97; /* @kind other */
+}
+@media (prefers-reduced-motion:reduce){
+  :root{
+    --duration-fast:0ms; /* @kind other */
+    --duration-normal:0ms; /* @kind other */
+    --duration-slow:0ms; /* @kind other */
+    --duration-slower:0ms; /* @kind other */
+    --press-scale:1; /* @kind other */
+  }
+}

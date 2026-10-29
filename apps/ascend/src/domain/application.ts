@@ -1,4 +1,4 @@
-import type { ApplicationStatus } from './application-event';
+import type { ApplicationRecordStatus } from './application-event';
 
 export interface Application {
   id: string;
@@ -15,8 +15,12 @@ export interface Application {
   /** Derived from the sender domain at prefilter time, never from the model. */
   source: string | null;
   firstSeenAt: Date;
-  /** A projection over application_events, not an authoritative field. */
-  currentStatus: ApplicationStatus;
+  /**
+   * A projection over application_events, not an authoritative field —
+   * except for `'draft'`, which no event can produce and which the generator
+   * writes directly. Hence the record type rather than the projection type.
+   */
+  currentStatus: ApplicationRecordStatus;
   statusAsOf: Date;
   archived: boolean;
   origin: ApplicationOrigin;
@@ -24,13 +28,15 @@ export interface Application {
   note: string | null;
 }
 
-export const applicationOrigins = ['gmail', 'manual'] as const;
+export const applicationOrigins = ['gmail', 'manual', 'generated', 'imported'] as const;
 export type ApplicationOrigin = (typeof applicationOrigins)[number];
 
-export const applicationStages = ['applied', 'acknowledged', 'assessment', 'interview', 'offer'] as const;
+// A draft is a real column on the board: it is where a generated resume waits
+// before it is sent.
+export const applicationStages = ['draft', 'applied', 'acknowledged', 'assessment', 'interview', 'offer'] as const;
 export type ApplicationStage = (typeof applicationStages)[number];
 
-export function applicationStage(status: ApplicationStatus): ApplicationStage | null {
+export function applicationStage(status: ApplicationRecordStatus): ApplicationStage | null {
   if (status === 'interview_invite' || status === 'interview_scheduled') return 'interview';
   if (status === 'rejected' || status === 'withdrawn') return null;
   return status;

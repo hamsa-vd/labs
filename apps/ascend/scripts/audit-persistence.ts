@@ -16,7 +16,18 @@ await runWorkerCommand('persistence.audit', async () => {
   );
   const plaintextTokens = await database().query<{ table_name: string; column_name: string }>(
     `select table_name,column_name from information_schema.columns
-     where table_schema='public' and column_name in ('refresh_token','access_token','gmail_token')`,
+     where table_schema='public' and (
+       column_name in ('refresh_token','access_token','gmail_token')
+       -- A provider key is only ever stored as ciphertext. Anything on this
+       -- table that could hold the key itself, however it were named, is a
+       -- build failure rather than a code review comment.
+       or (table_name='resume_api_keys'
+           and column_name ~* '(^|_)(key|api_key|secret|token|plaintext|password|private_key|value)($|_)')
+       -- Cost accounting keeps counts, not conversations: no prompt or
+       -- completion text may sit next to a price.
+       or (table_name='resume_llm_calls'
+           and column_name ~* '(^|_)(prompt|completion|response|message|body|text|content)($|_)')
+     )`,
   );
   const findings = {
     forbiddenColumns: forbiddenColumns.rows,

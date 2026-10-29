@@ -1,13 +1,14 @@
 import 'server-only';
-import type { ApplicationStatus } from '@/domain/application-event';
+import type { ApplicationRecordStatus, ApplicationStatus } from '@/domain/application-event';
+import type { ApplicationOrigin } from '@/domain/application';
 import { applicationStage } from '@/domain/application';
 import { normalizeEntity } from '@/domain/normalization';
 import { databaseConfigured, query, transaction } from '@/infrastructure/database';
 import { decodeCursor, encodeCursor } from './cursor';
 
 export interface ApplicationListItem {
-  id: string; company: string; role: string | null; status: ApplicationStatus; stage: string | null;
-  source: string | null; lastEventAt: Date; eventCount: number; origin: 'gmail' | 'manual';
+  id: string; company: string; role: string | null; status: ApplicationRecordStatus; stage: string | null;
+  source: string | null; lastEventAt: Date; eventCount: number; origin: ApplicationOrigin;
   jobUrl: string | null; note: string | null;
 }
 
@@ -29,8 +30,8 @@ export async function listApplicationsPage(userId: string, options: {
   if (!databaseConfigured()) return { applications: DEMO_APPLICATIONS.slice(0, limit), nextCursor: null };
   const cursor = decodeCursor(options.cursor);
   const rows = await query<{
-    id: string; company_display: string; role_title: string | null; current_status: ApplicationStatus;
-    source: string | null; last_event_at: Date; event_count: string; origin: 'gmail' | 'manual'; job_url: string | null; note: string | null;
+    id: string; company_display: string; role_title: string | null; current_status: ApplicationRecordStatus;
+    source: string | null; last_event_at: Date; event_count: string; origin: ApplicationOrigin; job_url: string | null; note: string | null;
   }>(
     `with listed as (
        select a.id,a.company_display,a.role_title,a.current_status,a.source,a.origin,a.job_url,a.note,
@@ -78,8 +79,8 @@ export async function listApplications(userId: string, options: {
 export async function applicationById(userId: string, id: string) {
   if (!databaseConfigured()) return { application: DEMO_APPLICATIONS.find((item) => item.id === id) ?? null, events: [], merges: [] };
   const applicationRows = await query<{
-    id: string; company_display: string; role_title: string | null; current_status: ApplicationStatus; source: string | null;
-    last_event_at: Date; event_count: string; origin: 'gmail' | 'manual'; job_url: string | null; note: string | null;
+    id: string; company_display: string; role_title: string | null; current_status: ApplicationRecordStatus; source: string | null;
+    last_event_at: Date; event_count: string; origin: ApplicationOrigin; job_url: string | null; note: string | null;
   }>(
     `select a.id,a.company_display,a.role_title,a.current_status,a.source,a.origin,a.job_url,a.note,
        coalesce(max(e.occurred_at),a.status_as_of) last_event_at,count(e.id)::text event_count

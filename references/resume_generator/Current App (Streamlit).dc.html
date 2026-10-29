@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#fff; font-family:"Source Sans 3","Source Sans Pro",sans-serif; color:#31333F; }
+  a { color:#ff4b4b; }
+  a:hover { color:#ff2b2b; }
+</style>
+</helmet>
+<div style="display:flex; min-height:1100px; font-size:14px; line-height:1.6;">
+  <aside style="width:304px; flex:none; background:#f0f2f6; padding:24px 24px 40px;">
+    <div style="font-size:20px; font-weight:600; margin-bottom:16px;">Runtime</div>
+    <div style="display:grid; gap:14px;">
+      <div style="background:#fffce7; border-radius:8px; padding:14px 16px; color:#926c05; font-size:14px;">OpenAI key is not set. Add it to <code style="font-family:'Source Code Pro',monospace; font-size:13px; color:#ff4b4b; background:rgba(255,75,75,0.1); padding:1px 4px; border-radius:4px;">.env</code> before generating.</div>
+      <div style="background:#fffce7; border-radius:8px; padding:14px 16px; color:#926c05; font-size:14px;">Anthropic key is not set. Add it to <code style="font-family:'Source Code Pro',monospace; font-size:13px; color:#ff4b4b; background:rgba(255,75,75,0.1); padding:1px 4px; border-radius:4px;">.env</code> before generating.</div>
+      <button type="button" style="align-self:start; background:#fff; color:#31333F; border:1px solid rgba(49,51,63,0.2); border-radius:8px; padding:7px 14px; font:inherit; font-size:14px; cursor:pointer;">Refresh model lists</button>
+      <label style="display:grid; gap:6px;"><span>Generation model</span>
+        <span style="position:relative; display:block;"><select style="width:100%; appearance:none; background:#f0f2f6; border:1px solid rgba(49,51,63,0.15); border-radius:8px; padding:9px 34px 9px 12px; font:inherit; font-size:14px; color:#31333F; cursor:pointer;"><option>gpt-5.6-sol</option></select><span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none; color:#31333F;">⌄</span></span>
+      </label>
+      <label style="display:grid; gap:6px;"><span style="display:flex; align-items:center; justify-content:space-between;">Revision model <span title="Used only if the resume score is below threshold." style="width:16px; height:16px; border-radius:50%; border:1px solid rgba(49,51,63,0.4); color:rgba(49,51,63,0.6); font-size:11px; line-height:14px; text-align:center; cursor:help;">?</span></span>
+        <span style="position:relative; display:block;"><select style="width:100%; appearance:none; background:#f0f2f6; border:1px solid rgba(49,51,63,0.15); border-radius:8px; padding:9px 34px 9px 12px; font:inherit; font-size:14px; color:#31333F; cursor:pointer;"><option>gpt-5.6-sol</option></select><span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none;">⌄</span></span>
+      </label>
+      <label style="display:grid; gap:6px;"><span>Review model</span>
+        <span style="position:relative; display:block;"><select style="width:100%; appearance:none; background:#f0f2f6; border:1px solid rgba(49,51,63,0.15); border-radius:8px; padding:9px 34px 9px 12px; font:inherit; font-size:14px; color:#31333F; cursor:pointer;"><option>opus</option></select><span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none;">⌄</span></span>
+      </label>
+      <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><span style="width:17px; height:17px; flex:none; border-radius:4px; background:#ff4b4b; color:#fff; font-size:12px; line-height:17px; text-align:center;">✓</span> Enable LangSmith tracing</label>
+      <label style="display:grid; gap:6px;"><span>LangSmith project</span>
+        <input value="resume-agent" style="background:#f0f2f6; border:1px solid rgba(49,51,63,0.15); border-radius:8px; padding:9px 12px; font:inherit; font-size:14px; color:#31333F;">
+      </label>
+      <div>LangSmith tracing: <code style="font-family:'Source Code Pro',monospace; font-size:13px; color:#09ab3b; background:rgba(9,171,59,0.1); padding:1px 4px; border-radius:4px;">enabled</code></div>
+      <div>LangSmith project: <code style="font-family:'Source Code Pro',monospace; font-size:13px; color:#09ab3b; background:rgba(9,171,59,0.1); padding:1px 4px; border-radius:4px;">resume-agent</code></div>
+      <hr style="border:0; border-top:1px solid rgba(49,51,63,0.2); margin:28px 0 8px;">
+      <div>latexmk: <code style="font-family:'Source Code Pro',monospace; font-size:13px; color:#09ab3b; background:rgba(9,171,59,0.1); padding:1px 4px; border-radius:4px;">available</code></div>
+    </div>
+  </aside>
+
+  <main style="flex:1; min-width:0; padding:56px 64px 80px;">
+    <div style="display:flex; gap:24px; border-bottom:1px solid rgba(49,51,63,0.1); margin-bottom:28px;">
+      <button type="button" onClick="{{ showGenerate }}" style="{{ tabGenStyle }}">✨ Generate</button>
+      <button type="button" onClick="{{ showOutput }}" style="{{ tabOutStyle }}">📋 Current Output</button>
+      <button type="button" onClick="{{ showJobs }}" style="{{ tabJobsStyle }}">💼 Applied Jobs</button>
+    </div>
+
+    <sc-if value="{{ isGenerate }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid; gap:20px; max-width:2130px;">
+        <label style="display:grid; gap:6px;"><span>Company name</span><input style="background:#f0f2f6; border:1px solid rgba(49,51,63,0.15); border-radius:8px; padding:10px 12px; font:inherit; font-size:14px;"></label>
+        <label style="display:grid; gap:6px;"><span>Job title</span><input style="background:#f0f2f6; border:1px solid rgba(49,51,63,0.15); border-radius:8px; padding:10px 12px; font:inherit; font-size:14px;"></label>
+        <div style="display:grid; gap:8px;"><span>JD source</span>
+          <div style="display:flex; gap:24px;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><span style="width:17px; height:17px; border-radius:50%; border:5px solid #ff4b4b; background:#fff; box-sizing:border-box;"></span> Paste text</label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><span style="width:17px; height:17px; border-radius:50%; border:1px solid rgba(49,51,63,0.3); background:#fff; box-sizing:border-box;"></span> Upload file</label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><span style="width:17px; height:17px; border-radius:50%; border:1px solid rgba(49,51,63,0.3); background:#fff; box-sizing:border-box;"></span> URL</label>
+          </div>
+        </div>
+        <label style="display:grid; gap:6px;"><span>Job description</span><textarea style="background:#f0f2f6; border:1px solid rgba(49,51,63,0.15); border-radius:8px; padding:10px 12px; font:inherit; font-size:14px; height:260px; resize:vertical;"></textarea></label>
+        <label style="display:grid; gap:6px;"><span>Resume template</span>
+          <span style="position:relative; display:block;"><select style="width:100%; appearance:none; background:#f0f2f6; border:1px solid rgba(49,51,63,0.15); border-radius:8px; padding:10px 34px 10px 12px; font:inherit; font-size:14px; cursor:pointer;"><option>Auto</option><option>frontend</option><option>backend-java</option><option>backend-python</option><option>fullstack</option><option>senior-engineer</option></select><span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none;">⌄</span></span>
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><span style="width:17px; height:17px; flex:none; border-radius:4px; background:#ff4b4b; color:#fff; font-size:12px; line-height:17px; text-align:center;">✓</span> Compile PDFs after generation <span style="width:16px; height:16px; border-radius:50%; border:1px solid rgba(49,51,63,0.4); color:rgba(49,51,63,0.6); font-size:11px; line-height:14px; text-align:center; cursor:help;">?</span></label>
+        <button type="button" style="justify-self:start; background:#ff4b4b; color:#fff; border:1px solid #ff4b4b; border-radius:8px; padding:9px 20px; font:inherit; font-size:14px; font-weight:400; cursor:pointer;">Generate</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isOutput }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <h2 style="font-size:24px; font-weight:600; margin:0 0 16px;">Current Output</h2>
+        <div style="margin-bottom:6px;">Status: <code style="font-family:'Source Code Pro',monospace; font-size:13px; color:#09ab3b; background:rgba(9,171,59,0.1); padding:1px 4px; border-radius:4px;">loaded_saved_application</code></div>
+        <div style="margin-bottom:28px;">Output directory: <code style="font-family:'Source Code Pro',monospace; font-size:13px; color:#09ab3b; background:rgba(9,171,59,0.1); padding:1px 4px; border-radius:4px;">/Users/liv-extech/Documents/Personal/Resume/companies/expedia/software-engineer-iii</code></div>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-bottom:24px;">
+          <div><div style="font-size:14px; color:#31333F;">LLM review score</div><div style="font-size:38px; line-height:1.2;">8.7</div></div>
+          <div><div style="font-size:14px;">ATS score</div><div style="font-size:38px; line-height:1.2;">—</div></div>
+          <div><div style="font-size:14px;">Revisions</div><div style="font-size:38px; line-height:1.2;">1</div></div>
+        </div>
+        <div style="background:#fffce7; border-radius:8px; padding:14px 16px; color:#926c05; margin-bottom:24px;">ATS score 58/100 is below the Excellent threshold (80). Resume may not pass automated screening.</div>
+        <div style="display:flex; gap:20px; border-bottom:1px solid rgba(49,51,63,0.1); margin-bottom:16px; font-size:14px;">
+          <span style="padding-bottom:10px; color:#ff4b4b; border-bottom:2px solid #ff4b4b; margin-bottom:-1px;">Preview</span>
+          <span style="padding-bottom:10px; color:#31333F;">Edit &amp; Compile</span>
+          <span style="padding-bottom:10px; color:#31333F;">Review</span>
+          <span style="padding-bottom:10px; color:#31333F;">🎯 ATS</span>
+          <span style="padding-bottom:10px; color:#31333F;">JD</span>
+        </div>
+        <div style="display:flex; gap:16px; border-bottom:1px solid rgba(49,51,63,0.1); margin-bottom:16px; font-size:14px;">
+          <span style="padding-bottom:10px; color:#ff4b4b; border-bottom:2px solid #ff4b4b; margin-bottom:-1px;">Resume</span>
+          <span style="padding-bottom:10px;">Cover Letter</span>
+        </div>
+        <div style="font-weight:700; margin-bottom:12px;">Resume</div>
+        <div style="height:520px; background:#fafafa; border:1px solid rgba(49,51,63,0.08); display:flex; align-items:center; justify-content:center; color:rgba(49,51,63,0.4); font-size:12px;">PDF iframe preview (800px tall, data: URL)</div>
+        <h2 style="font-size:24px; font-weight:600; margin:40px 0 16px;">Downloads</h2>
+        <div style="display:grid; gap:12px; justify-items:start;">
+          <button type="button" style="background:#fff; border:1px solid rgba(49,51,63,0.2); border-radius:8px; padding:7px 14px; font:inherit; font-size:14px; cursor:pointer;">Resume TeX</button>
+          <button type="button" style="background:#fff; border:1px solid rgba(49,51,63,0.2); border-radius:8px; padding:7px 14px; font:inherit; font-size:14px; cursor:pointer;">Cover Letter TeX</button>
+          <button type="button" style="background:#fff; border:1px solid rgba(49,51,63,0.2); border-radius:8px; padding:7px 14px; font:inherit; font-size:14px; cursor:pointer;">Review JSON</button>
+          <button type="button" style="background:#fff; border:1px solid rgba(49,51,63,0.2); border-radius:8px; padding:7px 14px; font:inherit; font-size:14px; cursor:pointer;">Resume PDF</button>
+          <button type="button" style="background:#fff; border:1px solid rgba(49,51,63,0.2); border-radius:8px; padding:7px 14px; font:inherit; font-size:14px; cursor:pointer;">Cover Letter PDF</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isJobs }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <label style="display:flex; align-items:center; gap:10px; margin-bottom:16px; cursor:pointer;"><span style="width:36px; height:20px; border-radius:999px; background:rgba(49,51,63,0.3); position:relative; flex:none;"><span style="position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff;"></span></span> Show rejected</label>
+        <div style="margin-bottom:12px;"><strong>6</strong> active</div>
+        <table style="width:100%; border-collapse:collapse; font-size:13px; border:1px solid rgba(49,51,63,0.1);">
+          <thead><tr style="background:#f0f2f6; text-align:left; color:rgba(49,51,63,0.7);">
+            <th style="width:32px; border-right:1px solid rgba(49,51,63,0.1); padding:6px 8px;"></th>
+            <th style="border-right:1px solid rgba(49,51,63,0.1); padding:6px 10px; font-weight:400;">Job</th>
+            <th style="border-right:1px solid rgba(49,51,63,0.1); padding:6px 10px; font-weight:400; width:180px;">Status</th>
+            <th style="border-right:1px solid rgba(49,51,63,0.1); padding:6px 10px; font-weight:400; width:180px;">Resume</th>
+            <th style="border-right:1px solid rgba(49,51,63,0.1); padding:6px 10px; font-weight:400; width:180px;">Round</th>
+            <th style="padding:6px 10px; font-weight:400; width:180px;">Files</th>
+          </tr></thead>
+          <tbody>
+            <sc-for list="{{ rows }}" as="row" hint-placeholder-count="6">
+              <tr style="{{ row.rowStyle }}">
+                <td style="border-top:1px solid rgba(49,51,63,0.1); border-right:1px solid rgba(49,51,63,0.1); padding:5px 8px; text-align:center;">{{ row.check }}</td>
+                <td style="border-top:1px solid rgba(49,51,63,0.1); border-right:1px solid rgba(49,51,63,0.1); padding:5px 10px;">{{ row.job }}</td>
+                <td style="border-top:1px solid rgba(49,51,63,0.1); border-right:1px solid rgba(49,51,63,0.1); padding:5px 10px;">{{ row.status }}</td>
+                <td style="border-top:1px solid rgba(49,51,63,0.1); border-right:1px solid rgba(49,51,63,0.1); padding:5px 10px;">{{ row.score }}</td>
+                <td style="border-top:1px solid rgba(49,51,63,0.1); border-right:1px solid rgba(49,51,63,0.1); padding:5px 10px;">{{ row.round }}</td>
+                <td style="border-top:1px solid rgba(49,51,63,0.1); padding:5px 10px;">📄 📝 ✉️ 📎</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+
+        <hr style="border:0; border-top:1px solid rgba(49,51,63,0.2); margin:40px 0 28px;">
+        <h3 style="font-size:22px; font-weight:600; margin:0 0 4px;">Expedia</h3>
+        <div style="color:#999; font-size:16px; margin-bottom:24px;">Software Engineer III</div>
+        <div style="display:grid; grid-template-columns:2fr 1.5fr 2.5fr; gap:24px; margin-bottom:28px;">
+          <div>
+            <div style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#888; margin-bottom:6px;">Scores</div>
+            <div style="margin-bottom:10px;"><span style="display:inline-block; font-size:24px; font-weight:700; padding:3px 13px; border-radius:8px; margin-right:8px; background:rgba(40,167,69,0.15); color:#2d7a3a; border:1px solid rgba(40,167,69,0.3);">8.7</span><span style="color:#888; font-size:13px;">LLM review</span></div>
+            <div><span style="display:inline-block; font-size:24px; font-weight:700; padding:3px 13px; border-radius:8px; margin-right:8px; background:rgba(220,53,69,0.12); color:#c0392b; border:1px solid rgba(220,53,69,0.3);">58</span><span style="color:#888; font-size:13px;">ATS (Fair)</span></div>
+          </div>
+          <div>
+            <div style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#888; margin-bottom:6px;">Status</div>
+            <span style="display:inline-block; font-size:12px; font-weight:600; padding:4px 12px; border-radius:999px; letter-spacing:0.03em; text-transform:uppercase; background:rgba(13,110,253,0.10); color:#1a6fd4; border:1px solid rgba(13,110,253,0.25);">Applied</span>
+          </div>
+          <div>
+            <div style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#888; margin-bottom:6px;">Artifacts</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <span style="font-size:12px; padding:3px 10px; border-radius:6px; border:1px solid rgba(40,167,69,0.4); color:#2d7a3a; background:rgba(40,167,69,0.08);">📄 JD</span>
+              <span style="font-size:12px; padding:3px 10px; border-radius:6px; border:1px solid rgba(40,167,69,0.4); color:#2d7a3a; background:rgba(40,167,69,0.08);">📝 Resume</span>
+              <span style="font-size:12px; padding:3px 10px; border-radius:6px; border:1px solid rgba(0,0,0,0.12); color:#888; background:rgba(0,0,0,0.04); opacity:0.35;">✉️ Cover</span>
+              <span style="font-size:12px; padding:3px 10px; border-radius:6px; border:1px solid rgba(40,167,69,0.4); color:#2d7a3a; background:rgba(40,167,69,0.08);">📎 PDFs</span>
+            </div>
+          </div>
+        </div>
+        <div style="border:1px solid rgba(49,51,63,0.1); border-radius:8px; margin-bottom:24px;">
+          <div style="background:#f0f2f6; padding:10px 14px; font-size:14px; border-radius:8px 8px 0 0;">⌄ ✏️ Update tracking</div>
+          <div style="padding:20px; display:grid; gap:18px;">
+            <div style="display:grid; grid-template-columns:2fr 1.5fr 0.8fr 2.5fr; gap:20px;">
+              <label style="display:grid; gap:6px;"><span>Status</span><span style="position:relative;"><select style="width:100%; appearance:none; background:#f0f2f6; border:1px solid rgba(49,51,63,0.15); border-radius:8px; padding:9px 34px 9px 12px; font:inherit; font-size:14px; cursor:pointer;"><option>Applied</option></select><span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none;">⌄</span></span></label>
+              <label style="display:grid; gap:6px;"><span>Current round</span><input placeholder="e.g. Technical" style="background:#f0f2f6; border:1px solid rgba(49,51,63,0.15); border-radius:8px; padding:9px 12px; font:inherit; font-size:14px;"></label>
+              <label style="display:grid; gap:6px;"><span>of</span><span style="display:flex; background:#f0f2f6; border:1px solid rgba(49,51,63,0.15); border-radius:8px; align-items:center; padding:0 8px 0 12px;"><input value="0" style="flex:1; min-width:0; background:transparent; border:0; padding:9px 0; font:inherit; font-size:14px;"><span style="color:rgba(49,51,63,0.6); padding:0 6px; cursor:pointer;">−</span><span style="color:rgba(49,51,63,0.6); padding:0 6px; cursor:pointer;">+</span></span></label>
+              <label style="display:grid; gap:6px;"><span>Next action</span><input placeholder="e.g. Send thank-you email" style="background:#f0f2f6; border:1px solid rgba(49,51,63,0.15); border-radius:8px; padding:9px 12px; font:inherit; font-size:14px;"></label>
+            </div>
+            <label style="display:grid; gap:6px; max-width:60%;"><span>Notes</span><input placeholder="Quick note…" style="background:#f0f2f6; border:1px solid rgba(49,51,63,0.15); border-radius:8px; padding:9px 12px; font:inherit; font-size:14px;"></label>
+            <div style="display:flex; gap:24px;">
+              <button type="button" style="background:#ff4b4b; color:#fff; border:1px solid #ff4b4b; border-radius:8px; padding:8px 22px; font:inherit; font-size:14px; cursor:pointer;">Save</button>
+              <button type="button" style="background:#fff; border:1px solid rgba(49,51,63,0.2); border-radius:8px; padding:8px 16px; font:inherit; font-size:14px; cursor:pointer;">Open in Current Output</button>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; gap:20px; border-bottom:1px solid rgba(49,51,63,0.1); margin-bottom:16px; font-size:14px;">
+          <span style="padding-bottom:10px; color:#ff4b4b; border-bottom:2px solid #ff4b4b; margin-bottom:-1px;">📄 JD</span>
+          <span style="padding-bottom:10px;">📝 Resume</span>
+          <span style="padding-bottom:10px;">✉️ Cover Letter</span>
+          <span style="padding-bottom:10px;">🔍 Review</span>
+          <span style="padding-bottom:10px;">🎯 ATS</span>
+          <span style="padding-bottom:10px;">📎 PDFs</span>
+        </div>
+        <textarea disabled style="width:100%; box-sizing:border-box; height:300px; background:#f0f2f6; border:1px solid rgba(49,51,63,0.15); border-radius:8px; padding:12px; font:inherit; font-size:14px; color:rgba(49,51,63,0.5); resize:vertical;">Skip to main content
+
+CAREERS
+
+Teams
+
+Administration
+
+Commercial
+
+Communications
+
+Corporate Solutions
+
+Finance
+
+Human Resources</textarea>
+      </div>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:2560,&quot;height&quot;:1300}}">
+class Component extends DCLogic {
+  state = { tab: 'generate' };
+  renderVals() {
+    const t = this.state.tab;
+    const tab = (id) => ({
+      background: 'none', border: 0, padding: '0 0 10px', marginBottom: '-1px', font: 'inherit',
+      fontSize: '14px', cursor: 'pointer',
+      color: t === id ? '#ff4b4b' : '#31333F',
+      borderBottom: t === id ? '2px solid #ff4b4b' : '2px solid transparent'
+    });
+    const data = [
+      ['Elyos  /  Staff Software Engineer', 'Interviewing', '8.7', '1 (3)', false],
+      ['Expedia  /  Software Engineer III', 'Applied', '8.7', '', true],
+      ['Marks Spencer  /  Senior Software Engineer Personalisation', 'Applied', '8.9', '', false],
+      ['Marks Spencer  /  Senior Software Engineer Web And International', 'Draft', '8.8', '', false],
+      ['Marks Spencer  /  Senior Software Engineer Web Platform', 'Draft', '8.6', '', false],
+      ['Monzo  /  Backend III', 'Applied', '9.2', '', false]
+    ];
+    return {
+      isGenerate: t === 'generate', isOutput: t === 'output', isJobs: t === 'jobs',
+      showGenerate: () => this.setState({ tab: 'generate' }),
+      showOutput: () => this.setState({ tab: 'output' }),
+      showJobs: () => this.setState({ tab: 'jobs' }),
+      tabGenStyle: tab('generate'), tabOutStyle: tab('output'), tabJobsStyle: tab('jobs'),
+      rows: data.map(([job, status, score, round, sel]) => ({
+        job, status, score, round,
+        check: sel ? '☑' : '☐',
+        rowStyle: sel ? { background: 'rgba(255,75,75,0.08)' } : {}
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

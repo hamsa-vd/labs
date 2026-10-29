@@ -1,0 +1,2390 @@
+"Title","Description","Labels","Estimate","Priority","Milestone"
+"RG-001 — Scaffold the resume-generator monorepo","## Product requirement
+
+**Problem.** v1 is a single Python folder with a Streamlit entrypoint. v2 has a web app, an API,
+a compile service, and shared packages that must version together.
+
+**Outcome.** A new `resume-generator` repo where `pnpm dev` starts the web app and API together,
+and every subsequent ticket has an obvious place to put its files.
+
+**Acceptance criteria**
+- `pnpm install && pnpm dev` boots Next.js on :3000 and FastAPI on :8000 from a clean checkout.
+- `pnpm lint`, `pnpm typecheck`, `pnpm test` each run across every workspace and pass.
+- `README.md` gets a new engineer running in under ten minutes with no tribal knowledge.
+
+## Technical plan
+
+### Files
+```
+package.json                pnpm workspaces, scripts: dev, build, lint, typecheck, test, ds:sync
+pnpm-workspace.yaml         apps/*, packages/*
+turbo.json                  task graph + caching
+.nvmrc                      22
+apps/web/                   create-next-app: TS, App Router, no Tailwind, src dir, ESLint
+apps/api/pyproject.toml     uv project, Python 3.12, deps: fastapi uvicorn[standard] pydantic-settings
+                            supabase langgraph langgraph-checkpoint-postgres httpx anthropic openai
+apps/api/resume_api/__init__.py
+apps/api/Makefile           dev, test, lint targets
+packages/tokens/            placeholder, filled by RG-010
+packages/ui/                placeholder, filled by RG-011
+packages/contracts/         placeholder, filled by RG-004
+services/latex/             placeholder, filled by RG-035
+supabase/                   placeholder, filled by RG-002
+.github/workflows/ci.yml    placeholder, filled by RG-008
+AGENTS.md                   implementation rules (copy the ""Rules"" section of plan/README.md)
+.env.example                every var any workspace reads, with a comment per line
+```
+
+### Steps
+1. `pnpm create next-app@latest apps/web --ts --app --src-dir --eslint --no-tailwind --import-alias ""@/*""`.
+   Tailwind is deliberately off — styling is token-based CSS Modules (ADR-002).
+2. Add Turborepo; declare `build` depends on `^build`, and cache `lint`/`typecheck`/`test`.
+3. `uv init apps/api` with the dep list above. Add `ruff` + `mypy` (strict on `resume_api`) + `pytest`.
+4. Root `dev` script uses `concurrently` to run `turbo dev --filter=web` and `make -C apps/api dev`.
+5. Wire `pnpm lint/typecheck/test` to fan out to both ecosystems (turbo for JS, make for Python).
+6. Write `AGENTS.md`: no unlisted files, tokens only for visual values, tests ship with the ticket,
+   reuse v1 where `plan/01-v1-reuse-map.md` says to.
+7. Commit `plan/` into the new repo so implementing models can read their own tickets.
+
+### Tests
+- CI-equivalent smoke: fresh clone → install → `pnpm build` succeeds.
+- `apps/api`: one `test_smoke.py` asserting the package imports.
+
+### Definition of done
+Clean clone to running dev environment in one documented command. No TODOs in `.env.example`.
+
+### Out of scope
+Deployment, Docker Compose for the full stack (RG-008), any product code.","foundations,foundation,infra","3","1","M1 Walking skeleton"
+"RG-002 — Supabase schema, migrations, and RLS","## Product requirement
+
+**Problem.** v1 stores everything on the local filesystem under `companies/<company>/<role>/`,
+keyed by nothing but a path. Two users would overwrite each other. Application status lives in a
+loose `application_status.json`.
+
+**Outcome.** Every piece of a user's data — applications, runs, templates, prompts, source of
+truth, keys — is a row that belongs to exactly one user and is unreachable by any other.
+
+**Acceptance criteria**
+- A signed-in user can only ever read or write rows where `user_id = auth.uid()`, enforced by the
+  database itself, not by application code.
+- The schema can represent every field v1 persisted in `review.json` and `application_status.json`.
+- Migrations run forward on an empty database with no manual steps.
+
+## Technical plan
+
+### Files
+```
+supabase/config.toml
+supabase/migrations/0001_extensions.sql       pgcrypto, uuid-ossp
+supabase/migrations/0002_profiles.sql
+supabase/migrations/0003_source_of_truth.sql
+supabase/migrations/0004_templates.sql
+supabase/migrations/0005_prompts.sql
+supabase/migrations/0006_applications.sql
+supabase/migrations/0007_runs.sql
+supabase/migrations/0008_documents.sql
+supabase/migrations/0009_api_keys.sql
+supabase/migrations/0010_rls.sql              one policy set per table
+supabase/seed/                                system-default prompts + templates (RG-021, RG-022)
+apps/api/resume_api/db.py                     supabase client factory, per-request user-scoped
+```
+
+### Schema
+
+`profiles` — `id uuid pk references auth.users`, `email citext unique`, `full_name`,
+`theme text default 'system'`, `default_generation_model`, `default_review_model`,
+`default_revision_model`, `max_revisions int default 1`, `resume_pass_score numeric default 8.0`,
+`ats_pass_threshold int default 80`, timestamps.
+
+`allowed_emails` — `email citext pk`, `invited_at`, `invited_by`, `redeemed_at`. No RLS; service
+role only. Gates sign-in (RG-003).
+
+`sot_companies` — user_id, name, role_title, start_date, end_date, location, sort_order.
+`sot_projects` — user_id, company_id fk, name, summary, tech text[].
+`sot_bullets` — user_id, company_id fk, project_id fk null, text, metrics text[], tags text[].
+`sot_skills` — user_id, name citext, category, proficiency, years numeric,
+`evidence_bullet_ids uuid[]`. Unique `(user_id, lower(name))`.
+
+The split matters: the evidence gate (RG-036) needs to point a keyword at a *specific* company
+or project **and** a *specific* bullet. v1's flat `source_of_truth.txt` cannot express that.
+
+`templates` — user_id null-for-system, key, name, kind `('single_page','multi_page')`,
+tex_source text, storage_path text null, is_system bool, derived_from uuid null, timestamps.
+
+`prompts` — user_id null-for-system, stage enum
+`('targeting','generation','review','revision','ats','cover_letter')`, body text, version int,
+is_active bool. Unique `(user_id, stage, version)`. System rows have `user_id is null`.
+
+`applications` — user_id, company_name, company_slug, job_title, role_slug, jd_text,
+jd_source_type `('text','url','upload')`, jd_url, source `('generated','imported')`,
+status `('draft','applied','screening','interviewing','offer','rejected','withdrawn')`,
+round_count int, current_round, next_action, notes, applied_at, timestamps.
+Index `(user_id, updated_at desc)`; unique `(user_id, company_slug, role_slug, created_at)`.
+
+`runs` — application_id fk, user_id, status
+`('queued','running','succeeded','failed','cancelled')`, template_id fk, recommended_template_key,
+template_reason, targeting_brief jsonb, resume_review jsonb, resume_score numeric,
+fix_resolution_matrix jsonb, revision_count int, ats jsonb, warnings text[], compile_errors jsonb,
+token_usage jsonb, cost_usd numeric, error text, started_at, finished_at.
+The `ats` jsonb mirrors v1's keys exactly: `total_score, grade, keyword_score, structural_score,
+semantic_score, matched, missing_required, missing_preferred, top_actions, hard_requirements,
+all_hard_met, error`.
+
+`run_events` — run_id fk, seq int, node text, status, payload jsonb, created_at.
+Unique `(run_id, seq)`. This is the SSE replay log (RG-032).
+
+`documents` — user_id, application_id, run_id null, kind
+`('resume_tex','resume_pdf','cover_letter_tex','cover_letter_pdf','jd','imported_resume')`,
+storage_path, byte_size, content_hash, created_at.
+
+`api_keys` — user_id, provider `('anthropic','openai','openrouter')`, ciphertext bytea,
+last_four text, label, created_at, last_used_at. Unique `(user_id, provider, label)`.
+
+### RLS
+Enable on every table above except `allowed_emails`. Standard policy per table:
+`using (user_id = auth.uid())` for select/update/delete, `with check (user_id = auth.uid())` for
+insert. `templates` and `prompts` additionally allow `select` where `user_id is null` (system rows).
+
+### Steps
+1. `supabase init`; write migrations in the order above, each idempotent and forward-only.
+2. Write every table with `created_at timestamptz default now()` and a `set_updated_at` trigger.
+3. Add a `handle_new_user` trigger on `auth.users` that inserts a `profiles` row and clones the
+   system prompt + template rows for the new user (RG-021/022 supply the content).
+4. Generate types: `supabase gen types typescript` → `packages/contracts/src/database.types.ts`.
+
+### Reuse from v1
+`slugify()` from `resume_agent/storage.py` → `apps/api/resume_api/util/slug.py`, unchanged. It
+produces `company_slug`/`role_slug`. `default_application_status()` defines the status field set.
+
+### Tests
+- `supabase/tests/rls.test.sql` (pgTAP): user A cannot select, update, or delete any of user B's
+  rows in every RLS-enabled table. This test is the ticket.
+- Migration replay on an empty DB in CI.
+
+### Definition of done
+Migrations apply cleanly; pgTAP RLS suite green; generated TS types committed.
+
+### Out of scope
+Seed content (RG-021, RG-022), any API route.","foundations,foundation,data","5","1","M1 Walking skeleton"
+"RG-003 — Google sign-in with invite-only access","## Product requirement
+
+**Problem.** v1 has no concept of a user. v2 needs one identity per person, and access is
+closed while the product is early.
+
+**User story.** As an invited person I sign in with Google and land in my own workspace. As an
+uninvited person I see a register-interest screen instead of an error.
+
+**Acceptance criteria**
+- Sign in with Google is the only auth method.
+- An email absent from `allowed_emails` is signed straight back out and shown register-interest.
+  No half-created account is left behind.
+- Session survives a refresh and a server restart.
+- Every API route rejects a request with no valid Supabase JWT with `401`.
+
+## Technical plan
+
+### Files
+```
+apps/web/src/lib/supabase/client.ts        browser client
+apps/web/src/lib/supabase/server.ts        RSC/route-handler client (cookie-based)
+apps/web/src/middleware.ts                 session refresh + route guard
+apps/web/src/app/(auth)/sign-in/page.tsx
+apps/web/src/app/(auth)/callback/route.ts  exchanges code, runs the allowlist check
+apps/web/src/app/(auth)/no-access/page.tsx register-interest
+apps/api/resume_api/auth.py                get_current_user dependency
+apps/api/resume_api/middleware/auth.py
+supabase/migrations/0011_allowlist_guard.sql
+```
+
+### Steps
+1. Enable the Google provider in Supabase Auth; redirect URL `/(auth)/callback`.
+2. In the callback route: exchange the code, read the session email, `select 1 from allowed_emails
+   where email = ...`. If absent → `supabase.auth.signOut()` and redirect `/no-access`. If present
+   → stamp `redeemed_at` and redirect `/pipeline`.
+3. Also enforce server-side: a Postgres `before insert` trigger on `profiles` raises unless the
+   email is allowlisted. The client check is UX; the trigger is the actual gate.
+4. `middleware.ts`: refresh the session cookie on every request; redirect unauthenticated users
+   away from `/(app)/*` to `/sign-in`.
+5. API: `get_current_user` verifies the JWT against the Supabase JWKS, returns `UserContext(id,
+   email)`, and is a dependency on the whole authenticated router. Never trust a `user_id` from a
+   request body — it always comes from the token.
+6. Register-interest form posts to `POST /public/interest` (rate-limited, unauthenticated) which
+   inserts into an `interest_requests` table.
+
+### Tests
+- API: request with no token → 401; with a token for user A → `UserContext.id == A`.
+- API: a request body carrying a foreign `user_id` is ignored, not honoured.
+- Web (Playwright): allowlisted email reaches `/pipeline`; non-allowlisted lands on `/no-access`
+  with no session cookie remaining.
+
+### Definition of done
+Both tests green; no route in `/(app)` renders for an anonymous visitor.
+
+### Out of scope
+Admin UI for issuing invites (RG-051). Seed the first cohort with SQL.","foundations,foundation,auth","3","1","M1 Walking skeleton"
+"RG-004 — FastAPI application skeleton and API contract","## Product requirement
+
+**Problem.** Every later API ticket will otherwise re-invent error shapes, pagination, and
+settings loading, and the web app will hand-write fetch calls that drift from the server.
+
+**Outcome.** One consistent, typed API surface; the web client is generated from it, so a
+breaking server change fails the web typecheck.
+
+**Acceptance criteria**
+- Every error response has the same JSON shape.
+- `/docs` describes every route accurately.
+- The web app imports a generated client; no hand-written `fetch` to the API anywhere.
+
+## Technical plan
+
+### Files
+```
+apps/api/resume_api/main.py            app factory, CORS, routers, exception handlers
+apps/api/resume_api/settings.py        pydantic-settings, fails fast on a missing var
+apps/api/resume_api/errors.py          AppError hierarchy + handler
+apps/api/resume_api/schemas/common.py  Page[T], ErrorBody, IdResponse
+apps/api/resume_api/routers/health.py
+apps/api/resume_api/deps.py            db session, current user, blob store
+packages/contracts/package.json        openapi-typescript + openapi-fetch
+packages/contracts/src/client.ts       typed client factory
+scripts/gen-contracts.sh               boots the API, dumps openapi.json, generates TS
+```
+
+### Contracts
+Error envelope, used by every failure path:
+```json
+{ ""error"": { ""code"": ""run_budget_exceeded"", ""message"": ""Human sentence."", ""details"": {} } }
+```
+`code` is a stable snake_case string the UI can switch on. `message` follows the arey voice:
+what happened, then what to do, no exclamation marks.
+
+List responses: `{ ""items"": [...], ""next_cursor"": null }`. Cursor pagination, never offset.
+
+### Steps
+1. App factory with routers mounted under `/v1`. CORS allows only the web origin from settings.
+2. `AppError(code, message, status, details)`; subclasses `NotFound`, `Forbidden`, `Conflict`,
+   `BudgetExceeded`, `UpstreamFailed`, `ValidationFailed`. One handler renders them all.
+   A bare `Exception` handler logs with a request id and returns `internal_error` — never a stack.
+3. Request-id middleware: accept or mint `X-Request-Id`, bind it to structured logs, echo it back.
+4. `/v1/health` returns `{status, version, db: ok|degraded}`.
+5. `scripts/gen-contracts.sh` runs in CI and fails the build if the committed client is stale.
+
+### Tests
+- Error handler: a raised `NotFound` renders the envelope with status 404.
+- Settings: a missing required env var raises at import, not at first request.
+- Contract freshness check runs in CI.
+
+### Definition of done
+`/docs` clean, generated client committed, CI enforces freshness.
+
+### Out of scope
+Any domain route.","foundations,foundation,api","3","1","M1 Walking skeleton"
+"RG-005 — Next.js app skeleton and routing","## Product requirement
+
+**Problem.** The v1 prototype (`Resume Agent.dc.html`) proved six screens. They need real routes,
+real layouts, and real loading and error states.
+
+**Outcome.** Every screen has a URL, a loading state, and an error state, before any of them has
+content.
+
+**Acceptance criteria**
+- Deep-linking to any screen works; back and forward behave.
+- Every route shows a skeleton while loading, never a blank page or a spinner-on-white.
+- An API failure shows a recoverable error state with a retry, not a crashed boundary.
+
+## Technical plan
+
+### Files
+```
+apps/web/src/app/layout.tsx                 fonts, theme attribute, tokens import
+apps/web/src/app/page.tsx                   landing (RG-048)
+apps/web/src/app/(app)/layout.tsx           authenticated shell (RG-013)
+apps/web/src/app/(app)/pipeline/page.tsx
+apps/web/src/app/(app)/applications/new/page.tsx
+apps/web/src/app/(app)/applications/[id]/page.tsx
+apps/web/src/app/(app)/applications/[id]/runs/[runId]/page.tsx
+apps/web/src/app/(app)/source-of-truth/page.tsx
+apps/web/src/app/(app)/templates/page.tsx
+apps/web/src/app/(app)/settings/page.tsx
+    …each with loading.tsx and error.tsx
+apps/web/src/lib/api.ts                     server-side client with the auth token attached
+apps/web/src/lib/query.ts                   TanStack Query provider + defaults
+```
+
+### Steps
+1. Route group `(app)` carries the authenticated shell; `(auth)` and `/` do not.
+2. Server components fetch through `lib/api.ts` (token from the Supabase server client).
+   Client components use TanStack Query against the same generated client.
+3. Query defaults: `staleTime` 30 s, one retry, no refetch-on-focus for run data (SSE owns that).
+4. `loading.tsx` renders static `--bg-inset` skeleton blocks — no shimmer (ADR-002 / arey).
+5. `error.tsx` renders the arey `EmptyState` pattern with the error `code` mapped to a sentence
+   and a ""Try again"" button calling `reset()`.
+6. Theme: `data-theme` on `<html>`, resolved from `profiles.theme`, with a no-flash inline script
+   reading `localStorage` before paint.
+
+### Tests
+- Playwright: each route renders its heading for a signed-in user.
+- A forced API 500 renders the error state, and the retry re-requests.
+
+### Definition of done
+All nine routes reachable with loading and error states; no hydration warnings in the console.
+
+### Out of scope
+Screen content (Epic E), nav chrome (RG-013).","foundations,foundation,web","3","1","M1 Walking skeleton"
+"RG-006 — Document storage abstraction","## Product requirement
+
+**Problem.** v1 writes `.tex`, `.pdf`, `JD.txt`, and `review.json` to a local folder tree. That is
+not shareable, not backed up, and not multi-user.
+
+**Outcome.** Documents are stored per user, downloadable by the owner and nobody else, with a
+storage backend the product is not married to.
+
+**Acceptance criteria**
+- A user can download their own resume PDF; the same URL fails for anyone else.
+- Download links expire.
+- Swapping the storage provider touches exactly one class.
+
+## Technical plan
+
+Decision D1 in `plan/03-open-decisions.md`: Supabase Storage, private bucket `documents`.
+
+### Files
+```
+apps/api/resume_api/storage/base.py        BlobStore protocol
+apps/api/resume_api/storage/supabase.py    SupabaseBlobStore
+apps/api/resume_api/storage/paths.py       canonical path builder
+apps/api/resume_api/routers/documents.py   GET /v1/documents/{id}/url
+supabase/migrations/0012_storage_bucket.sql
+```
+
+### Contracts
+```python
+class BlobStore(Protocol):
+    async def put(self, path: str, data: bytes, content_type: str) -> str: ...
+    async def get(self, path: str) -> bytes: ...
+    async def signed_url(self, path: str, ttl_seconds: int = 60) -> str: ...
+    async def delete(self, path: str) -> None: ...
+```
+Path shape: `{user_id}/{application_id}/{run_id}/{kind}.{ext}`. Built only by `paths.py` —
+no string concatenation at call sites.
+
+### Steps
+1. Create the private bucket in a migration with a storage policy scoped to
+   `(storage.foldername(name))[1] = auth.uid()::text`.
+2. Every `put` also inserts a `documents` row (path, byte size, sha256). The row is the index;
+   the bucket is the bytes. Never list the bucket to find a file.
+3. `GET /v1/documents/{id}/url` checks ownership via the `documents` row, then returns a 60 s
+   signed URL. PDF bytes never pass through FastAPI.
+
+### Reuse from v1
+The file *names* v1 chose (`hamsa_resume.tex`, `cover_letter.tex`, `JD.txt`, `review.json`) map to
+the `documents.kind` enum. `review.json` becomes the `runs` row, not a blob.
+
+### Tests
+- Round-trip put/get/delete against a local Supabase.
+- Ownership: user B requesting user A's document id gets 404 (not 403 — do not leak existence).
+- A signed URL is unusable after its TTL.
+
+### Definition of done
+All three tests green; no call site imports `supabase.py` directly.
+
+### Out of scope
+PDF generation (RG-035).","foundations,foundation,data","2","1","M1 Walking skeleton"
+"RG-007 — Structured logging, errors, and run telemetry","## Product requirement
+
+**Problem.** A generation run makes up to sixteen LLM calls across three providers. When one
+fails or a run costs more than expected, there must be a record of why.
+
+**Outcome.** Every run is reconstructable after the fact: which node, which model, how many
+tokens, how long, what failed.
+
+**Acceptance criteria**
+- Any run id can be traced end to end from the logs.
+- A failed run shows the user a plain sentence and the operator a full trace.
+- No API key, resume body, or JD text is ever written to a log.
+
+## Technical plan
+
+### Files
+```
+apps/api/resume_api/logging.py       structlog JSON config, secret redaction processor
+apps/api/resume_api/telemetry.py     record_llm_call(run_id, node, provider, model, usage, ms)
+apps/web/src/lib/errors.ts           error code → user sentence map
+```
+
+### Steps
+1. structlog to JSON on stdout. Bind `request_id`, `user_id`, `run_id` for the request's lifetime.
+2. A redaction processor drops keys matching `api_key|authorization|ciphertext|tex|jd_text|
+   resume_text` and truncates any string over 500 chars.
+3. `record_llm_call` appends to `runs.token_usage` jsonb and increments `runs.cost_usd` using a
+   static price table in `llm/pricing.py`.
+4. Sentry on both apps, with the same redaction rules and `request_id` as a tag.
+5. `errors.ts` maps each server `code` to arey-voice copy. Unknown codes fall back to
+   ""Something failed on our side. Try again in a moment.""
+
+### Tests
+- The redaction processor removes each named key, verified per key.
+- `record_llm_call` accumulates cost correctly over three calls.
+
+### Definition of done
+A deliberately failed run produces one traceable log chain and zero secret leaks.
+
+### Out of scope
+Dashboards, alerting.","foundations,foundation,ops","2","1","M1 Walking skeleton"
+"RG-008 — One-command local development environment","## Product requirement
+
+**Problem.** The stack is five moving parts — Next.js, FastAPI, Postgres, Storage, and a LaTeX
+compiler — plus three paid LLM providers. Without a scripted local environment, every
+implementing model burns its first hour on setup and some of them will reach for a real API key
+to run a test.
+
+**Outcome.** `make bootstrap && pnpm dev` produces a fully working app with seeded data, on a
+machine with no LaTeX, no Postgres, and no API keys.
+
+**Acceptance criteria**
+- A clean machine reaches a working, signed-in app with sample data in under ten minutes.
+- The full test suite runs offline, with zero real LLM calls and zero cost.
+- Compiling a resume to PDF works locally with no TeX installation.
+- A single command resets the database to a known seeded state.
+
+## Technical plan
+
+This ticket is the reason the other 36 can be implemented cheaply. Treat developer experience
+here as a product requirement, not a nicety.
+
+### Files
+```
+Makefile                              bootstrap, dev, reset, seed, test, doctor
+docker-compose.dev.yml                supabase stack + latex service
+scripts/bootstrap.sh                  preflight checks → install → migrate → seed
+scripts/doctor.sh                     diagnose a broken environment
+supabase/seed/dev_seed.sql            one demo user with realistic data
+apps/api/resume_api/llm/fake.py       deterministic offline LLM client
+apps/api/tests/fixtures/llm/*.json    recorded responses per prompt stage
+.env.development                      committed; safe non-secret local defaults
+```
+
+### The offline LLM client — the important part
+`FakeLLMClient` implements the `LLMClient` protocol (RG-031) and returns recorded fixtures keyed
+by `(stage, hash(prompt))`, falling back to a generic valid response for that stage. It must
+return **schema-valid** output for every stage: strict JSON for targeting and review (so
+`parse_strict_json_object` succeeds), compilable LaTeX for generation and revision.
+
+`LLM_MODE=fake` is the default in `.env.development` and in CI. `LLM_MODE=live` requires real
+keys and is opt-in, never the default. A test that makes a network call to a provider fails —
+enforce it with a socket guard in `conftest.py`.
+
+This is what makes RG-030's graph testable: the whole pipeline, including revision loops, runs
+end to end in under two seconds with no money spent.
+
+### Steps
+1. `docker-compose.dev.yml` runs the Supabase local stack (Postgres, GoTrue, Storage, Kong) and
+   the RG-035 LaTeX container. Nothing else needs Docker.
+2. `make bootstrap`: check versions (Node 22, pnpm, uv, Python 3.12, Docker) and print a specific
+   fix for each missing one → `pnpm install` → `uv sync` → start compose → apply migrations →
+   seed system prompts and templates → seed the demo user.
+3. `dev_seed.sql` creates `dev@localhost` in `allowed_emails` and `auth.users` with a known
+   password, a populated source of truth derived from `base/source_of_truth.txt`, three
+   applications in different statuses, and one completed run with real scores. A seeded app that
+   looks like a used app is worth an hour of manual clicking on every ticket in Epic E.
+4. Local sign-in bypass: when `AUTH_MODE=local`, a ""Sign in as dev@localhost"" button appears on
+   the sign-in page. It is compiled out entirely unless `NODE_ENV === 'development'` — assert that
+   with a test, because an auth bypass reaching production is the worst possible outcome of this
+   ticket.
+5. `make reset` drops, re-migrates, and re-seeds. `make doctor` reports which of the five services
+   is unhealthy and how to fix it.
+6. `README.md` gets a ""Getting started"" section that is exactly these commands and nothing else.
+
+### Tests
+- CI runs `scripts/bootstrap.sh` on a clean runner and asserts the app answers on both ports.
+- The socket guard: a test attempting a real provider call fails with a clear message.
+- A full pipeline run completes in fake mode in under 5 s, with the same node sequence as live.
+- The dev sign-in bypass is absent from a production build (assert against the built bundle).
+
+### Definition of done
+Four tests green; a second machine bootstraps from the README with no undocumented steps.
+
+### Out of scope
+Cloud environments (RG-054).","foundations,foundation,infra,dx","3","1","M1 Walking skeleton"
+"RG-009 — Continuous integration and quality gates","## Product requirement
+
+**Problem.** A single-maintainer project with small models writing code needs the pipeline, not
+the reviewer, to catch mistakes.
+
+**Outcome.** Nothing merges that fails lint, types, tests, migrations, or the contract freshness
+check. Merging to `main` deploys.
+
+**Acceptance criteria**
+- A PR that breaks the API contract fails CI with a message naming the drift.
+- A PR touching `supabase/migrations` runs them against a throwaway database.
+- Every gate runs offline in fake-LLM mode (RG-008) — CI never spends money.
+
+## Technical plan
+
+### Files
+```
+.github/workflows/ci.yml         lint, typecheck, test, migrate, contracts, bootstrap
+apps/api/Dockerfile
+services/latex/Dockerfile
+```
+
+### Steps
+1. CI jobs: `web` (eslint, tsc, vitest, playwright), `api` (ruff, mypy strict, pytest),
+   `db` (spin Postgres, apply migrations, run the pgTAP RLS suite from RG-002),
+   `contracts` (regenerate and `git diff --exit-code`).
+2. A `bootstrap` job runs `scripts/bootstrap.sh` (RG-008) on a clean runner and smoke-tests both ports.
+3. `LLM_MODE=fake` is forced in CI, and the socket guard from RG-008 fails any test that reaches a provider.
+4. Images for `apps/api` and `services/latex` build on every PR so a broken Dockerfile is caught before RG-054 needs it.
+
+### Tests
+CI is the test. Add one deliberately-broken branch to prove each gate fires, then delete it.
+
+### Definition of done
+Green pipeline on `main`; every gate proven to fire once.
+
+### Out of scope
+Deployment and cloud environments — RG-054.","foundations,foundation,infra","3","1","M1 Walking skeleton"
+"RG-010 — Design token pipeline from the external design-system repo","## Product requirement
+
+**Problem.** The arey design system lives in a separate GitHub repo with no build step and no
+package. Copying values into the app guarantees drift; importing its JSX directly is not
+buildable in Next.js.
+
+**Outcome.** Token changes made in the design-system repo reach the product in one command, and
+it is impossible to commit a hard-coded colour, radius, shadow, or duration.
+
+**Acceptance criteria**
+- `pnpm ds:sync` updates tokens from a pinned upstream commit and reports what changed.
+- A PR introducing `#0071e3` or `border-radius: 12px` in app code fails lint.
+- Light and dark themes both switch entirely via `data-theme`, with no component-level branching.
+
+## Technical plan
+
+Implements ADR-002 (`plan/02-design-system-strategy.md`) — the *consume* half.
+
+### Files
+```
+packages/tokens/upstream.json          { repo, ref (commit SHA), paths[] }
+packages/tokens/scripts/sync.ts        fetch → write → verify
+packages/tokens/css/                   generated: fonts, colors, typography, spacing, radius,
+                                       elevation, motion, base  (DO NOT EDIT header on each)
+packages/tokens/src/index.ts           export const tokens = {...} as const  (name → var())
+packages/tokens/src/types.ts           type TokenName = '--accent-solid' | …  (generated)
+packages/tokens/PARITY.md              upstream SHA + sync date log
+eslint-config/no-raw-design-values.js  custom rule
+```
+
+### Steps
+1. `sync.ts` fetches the eight `tokens/*.css` files plus `styles.css` at the pinned SHA, writes
+   them into `packages/tokens/css/` with a generated-file banner, and parses every
+   `--custom-property` declaration into the TS union and the `tokens` object.
+2. **Removal guard:** after generating, scan `packages/ui/**` and `apps/web/**` for `var(--x)`
+   usages. If a used token no longer exists upstream, exit non-zero and list them. Bumping the
+   pin must be a deliberate, reviewed PR.
+3. `apps/web/src/app/layout.tsx` imports `@repo/tokens/css/index.css` once, globally. This is the
+   only global stylesheet in the app.
+4. Custom ESLint rule `no-raw-design-values`: error on hex colours, `rgb()`/`hsl()` literals,
+   `px` radii, `box-shadow` literals, `transition` durations, and font-family strings inside
+   `.module.css` and inline `style` props. Allowed: `0`, `1px` hairlines, `100%`, `var(...)`.
+5. Fonts: Instrument Sans + JetBrains Mono via `next/font`, exposed as `--font-sans`/`--font-mono`
+   so the upstream `fonts.css` contract still holds without a network font request.
+
+### Tests
+- `sync.ts` against a fixture: known input CSS produces the expected union and object.
+- Removal guard fires when a referenced token is deleted from the fixture.
+- ESLint rule: fixture file with a hex colour errors; the same file using `var(--accent-solid)` passes.
+
+### Definition of done
+Tokens generated and committed, pin recorded, lint rule active in CI.
+
+### Out of scope
+Components (RG-011).","design-system,design-system,web","3","1","M1 Walking skeleton"
+"RG-011 — Rebuild arey primitives as typed React components","## Product requirement
+
+**Problem.** The upstream components are preview-environment JSX: untyped, not RSC-safe, no
+tree-shaking, no tests. The product needs the same visual language as real, typed components.
+
+**Outcome.** Every screen in Epic E is assembled from `@repo/ui` and adds no bespoke styling.
+
+**Acceptance criteria**
+- Each component matches its upstream counterpart's anatomy and every interaction state
+  (hover, press, focus-visible, disabled, selected).
+- Every visual value in `packages/ui` is a `var(--*)` reference. Zero literals.
+- Keyboard operation and `prefers-reduced-motion` work on every interactive component.
+
+## Technical plan
+
+Implements ADR-002 — the *rebuild* half. Upstream JSX is the **spec**; do not copy it verbatim.
+
+### Files
+```
+packages/ui/src/core/{Button,IconButton,Icon,Card,Badge,Tag,Kbd,Avatar}.tsx
+packages/ui/src/forms/{Input,Textarea,Select,Checkbox,Radio,Switch,Field}.tsx
+packages/ui/src/feedback/{Dialog,Toast,Tooltip,Spinner,ProgressBar,EmptyState}.tsx
+packages/ui/src/navigation/{Tabs,SegmentedControl,Breadcrumbs,SidebarNav,ListRow}.tsx
+packages/ui/src/**/<Name>.module.css
+packages/ui/PARITY.md                upstream path → our file → verified SHA → deviations
+packages/ui/src/index.ts
+```
+
+### Rules (from the arey guide — non-negotiable)
+- Sentence case on every label. No emoji, ever. No unicode glyphs standing in for icons.
+- Machine-produced values (durations, scores, SHAs, timestamps, percentages in tables) use
+  `--font-mono`.
+- Cards: `--surface-card`, `--radius-card`, **hairline border and soft shadow, both**.
+- Glass (`--surface-glass` + `--backdrop-glass`) only on floating layers: top bar, popovers,
+  dialogs, toasts. Never on a static card.
+- Press = `transform: scale(var(--press-scale))`. Focus = `--ring-focus`, `:focus-visible` only,
+  replacing hover. Disabled = `opacity: .4` and nothing else.
+- Radii nest downward: 16px card → 12px control → 6px inner chip.
+- No left-border accent stripes. One accent colour only.
+- `Icon` wraps the Phosphor web font; never a raw `<i>`. Regular by default, Fill only for
+  selected state, Bold only at 12–14px.
+
+### Steps
+1. For each component: read the upstream file, list its props and states in `PARITY.md`, then
+   implement with CSS Modules + tokens. Server-component-safe by default; `'use client'` only on
+   components with state or refs (Dialog, Toast, Tooltip, Tabs, Switch, Select).
+2. Dialog and Tooltip build on Radix primitives for focus trap and positioning, styled entirely
+   by our CSS Modules. Do not re-implement focus management.
+3. Motion: entries are opacity + `translateY(4–8px)` + `scale(.98→1)` over 220ms with
+   `--ease-out`. Interactive feedback 140ms with `--ease-spring`.
+   `@media (prefers-reduced-motion: reduce)` zeroes every duration and the press scale.
+4. Ship a Storybook (or a `/kitchen-sink` route, if Storybook is too much weight) with every
+   component in every state, light and dark.
+
+### Tests
+- `vitest` + Testing Library per component: renders, prop variants, disabled blocks the handler.
+- `jest-axe` on every component; zero violations.
+- A repo-wide test asserting no literal hex or px-radius appears in `packages/ui/**/*.module.css`.
+- Playwright visual snapshots of the kitchen sink in both themes.
+
+### Definition of done
+All 27 components shipped with a `PARITY.md` row each; a11y and token tests green.
+
+### Out of scope
+App-specific composites — ScoreDial, ATSKeywordList, RunTimeline — which belong to their
+feature tickets in Epic E.","design-system,design-system,web","5","1","M1 Walking skeleton"
+"RG-012 — Theming, dark mode, and responsive foundations","## Product requirement
+
+**Problem.** The v1 prototype has a working light/dark toggle and a 940px responsive break. Both
+have to be real, persisted, and flash-free.
+
+**User story.** I set dark mode once and every device I sign in on respects it, with no white
+flash on load.
+
+**Acceptance criteria**
+- Three theme choices: light, dark, system. Persisted to the profile, not just the browser.
+- No flash of the wrong theme on first paint, including on a hard refresh.
+- Every layout works from 360px to 1920px with no horizontal scroll.
+
+## Technical plan
+
+### Files
+```
+apps/web/src/lib/theme.tsx                 provider + useTheme
+apps/web/src/app/theme-script.tsx          blocking inline script
+apps/web/src/styles/breakpoints.ts         sm 600, md 940, lg 1200, xl 1440
+apps/api/resume_api/routers/profile.py     PATCH /v1/profile { theme }
+```
+
+### Steps
+1. Inline script in `<head>` reads `localStorage.theme` (or `matchMedia`) and sets
+   `document.documentElement.dataset.theme` before paint. It is the only blocking script.
+2. `useTheme().set(t)` writes localStorage, updates the attribute, and fires `PATCH /v1/profile`
+   optimistically. On sign-in the server value seeds localStorage.
+3. Theme transition is opacity-only at 80ms per the arey guide — never a colour transition on
+   every element.
+4. **940px is the shell breakpoint** (matching the v1 prototype): above, a persistent 264px
+   sidebar; below, a glass top bar with a hamburger opening a sheet. RG-013 implements the chrome;
+   this ticket owns the token and the media-query helper.
+5. Content caps: `--content-max` 1120px centred; prose at `--prose-max` 68ch.
+
+### Tests
+- Playwright: set dark, hard reload, assert the first painted frame is dark (no flash).
+- Theme persists across sign-out and sign-in on a second browser context.
+- Viewport sweep at 360/600/940/1200/1920 — no horizontal overflow on any route.
+
+### Definition of done
+All three tests green.
+
+### Out of scope
+Nav chrome (RG-013).","design-system,design-system,web","2","2","M1 Walking skeleton"
+"RG-013 — Authenticated app shell","## Product requirement
+
+**Problem.** Six screens need one consistent frame: where am I, how do I get elsewhere, who am I
+signed in as, and how do I start a new application from anywhere.
+
+**Acceptance criteria**
+- The active screen is unmistakable in the nav.
+- ""New application"" is reachable in one click from every screen.
+- Under 940px the sidebar becomes a hamburger sheet; nothing is unreachable at 360px.
+- A run in progress shows a persistent indicator in the shell, on any screen.
+
+## Technical plan
+
+### Files
+```
+apps/web/src/components/shell/AppShell.tsx
+apps/web/src/components/shell/Sidebar.tsx        264px, independent scroll, 24px bottom mask
+apps/web/src/components/shell/TopBar.tsx         56px sticky, glass
+apps/web/src/components/shell/MobileNav.tsx      hamburger → sheet, <940px
+apps/web/src/components/shell/UserMenu.tsx       avatar → popover: theme, settings, sign out
+apps/web/src/components/shell/ActiveRunBadge.tsx subscribes to the in-flight run (RG-032)
+```
+
+### Structure
+Sidebar sections, in order: **Pipeline**, **New application** (primary Button, not a nav row),
+then a divider, then **Source of truth**, **Templates**, **Settings**. The arey wordmark
+(`assets/logo.svg`, `currentColor` stroke) sits at the top; a lowercase `arey` text lockup is
+used below the size at which the sketch stays legible.
+
+### Steps
+1. `AppShell` is a server component; only `MobileNav`, `UserMenu`, and `ActiveRunBadge` are client.
+2. Active state from `usePathname()`: `--bg-selected` fill + `--text-accent` label. No left stripe.
+3. Top bar is `position: sticky` with glass — the glass **is** the scroll protection; no gradient
+   fade. The sidebar's long list gets the 24px bottom gradient mask.
+4. A 1px indeterminate accent bar sits under the top bar during route transitions and while a run
+   is active — the arey loading pattern. No skeleton shimmer.
+5. Below 940px: hamburger opens a left sheet (`--radius-sheet`, glass, focus-trapped, Escape and
+   backdrop close, focus returns to the trigger). Nav rows are ≥44px tall.
+6. `ActiveRunBadge` shows `company · role` and the current node name, and links to the run page.
+   It is the reason a user can navigate away from a generation and come back.
+
+### Tests
+- Playwright: nav to each route marks exactly one row active.
+- At 900px the sidebar is absent and the hamburger opens a focus-trapped sheet; Escape closes it
+  and returns focus.
+- With a mocked in-flight run, the badge appears on the settings screen and links correctly.
+- `jest-axe` on the shell: zero violations; skip-to-content link present.
+
+### Definition of done
+All four tests green at 360, 940, and 1440px.
+
+### Out of scope
+Screen content.","design-system,design-system,web","3","2","M1 Walking skeleton"
+"RG-020 — Source of truth: structured model and API","## Product requirement
+
+**Problem.** v1 reads a single flat file, `base/source_of_truth.txt`, and injects it wholesale
+into every prompt. It works for one person, but nothing can *reference* a fact inside it — which
+is exactly what the ATS evidence gate (RG-036) needs, and it cannot be edited safely by a user.
+
+**User story.** As a user I keep one structured record of my career — companies, projects,
+bullets, skills — and every generated resume is built only from facts in it.
+
+**Acceptance criteria**
+- I can add, edit, reorder, and delete companies, projects, bullets, and skills.
+- A skill can be linked to the specific bullets that prove it.
+- The whole record renders back to the plain-text block the prompts expect, byte-stably.
+- Nothing is ever deleted silently: deleting a company warns about the bullets it owns.
+
+## Technical plan
+
+### Files
+```
+apps/api/resume_api/schemas/sot.py
+apps/api/resume_api/repositories/sot.py
+apps/api/resume_api/routers/sot.py
+apps/api/resume_api/pipeline/sot_render.py     structured rows → prompt text block
+apps/api/tests/test_sot_render.py
+```
+
+### Routes
+```
+GET    /v1/source-of-truth                 full tree (companies → projects → bullets) + skills
+POST   /v1/source-of-truth/companies       PATCH/DELETE /{id}
+POST   /v1/source-of-truth/projects        PATCH/DELETE /{id}
+POST   /v1/source-of-truth/bullets         PATCH/DELETE /{id}
+POST   /v1/source-of-truth/skills          PATCH/DELETE /{id}
+POST   /v1/source-of-truth/reorder         { entity, ids[] }  → bulk sort_order write
+GET    /v1/source-of-truth/rendered        the exact text the pipeline injects
+POST   /v1/source-of-truth/import          paste a v1-style text block → parsed draft (no write)
+```
+
+### `sot_render.py` — the important part
+The pipeline prompts (`generator.md`, `targeting_brief.md`, `reviewer.md`, `reviser.md`,
+`cover_letter.md`) all take a `SOURCE_OF_TRUTH` string. This function is the single producer of
+that string. Deterministic ordering (company sort_order, then project sort_order, then bullet
+sort_order) so identical data always yields an identical prompt — otherwise prompt caching and
+run comparison both break.
+
+Format: keep v1's shape so the existing prompts need no edits — company header line, role and
+dates, then indented bullets, then a skills block grouped by category.
+
+### Reuse from v1
+- `base/source_of_truth.txt` is the reference content and the format spec. Read it, match the
+  rendered output to it, and use it as the golden fixture for the render test.
+- The v1 prompts consume this string unchanged. Do not change the format to ""improve"" it.
+
+### Tests
+- Golden test: the seeded structured record renders **byte-identical** to a fixture derived from
+  `base/source_of_truth.txt`. This is the ticket's core test.
+- Ordering is stable across two calls with rows inserted out of order.
+- `/import` parses the v1 text block into the correct company/project/bullet counts.
+- Deleting a company cascades to its projects and bullets, and returns the count it removed.
+
+### Definition of done
+Golden render test green; all CRUD routes covered; RLS verified for a second user.
+
+### Out of scope
+The editor UI (RG-045).","user-data,data,api","5","2","M2 Domain"
+"RG-021 — LaTeX template library","## Product requirement
+
+**Problem.** v1 hard-codes five template paths in `config.py` and picks between them with a
+keyword heuristic. Users cannot add their own, and the ten `.tex` files that exist are invisible
+to the product.
+
+**User story.** As a user I keep a library of resume templates — the seeded defaults plus my own,
+added by upload, paste, or by copying an existing one — and I choose or accept a recommendation
+for each application.
+
+**Acceptance criteria**
+- Ten system templates are available on first sign-in without me doing anything.
+- I can add a template three ways: upload a `.tex` file, paste LaTeX, or duplicate an existing one.
+- I can rename and delete my own templates but never the system ones.
+- The system still recommends a template from the job description, and tells me why.
+
+## Technical plan
+
+### Files
+```
+apps/api/resume_api/schemas/templates.py
+apps/api/resume_api/repositories/templates.py
+apps/api/resume_api/routers/templates.py
+apps/api/resume_api/pipeline/template_select.py     ported from v1
+apps/api/resume_api/latex/validate.py               structural sanity + safety scan
+supabase/seed/templates/*.tex                       the ten v1 templates
+supabase/migrations/0013_seed_templates.sql
+```
+
+### Routes
+```
+GET    /v1/templates                      system + mine
+POST   /v1/templates                      { name, kind, tex_source } | multipart upload
+POST   /v1/templates/{id}/duplicate       { name }
+PATCH  /v1/templates/{id}                 own rows only
+DELETE /v1/templates/{id}                 own rows only; 409 if referenced by a run
+POST   /v1/templates/recommend            { jd_text, job_title } → { key, reason, alternatives[] }
+```
+
+### Steps
+1. Seed: import `single_page/*.tex` (5) and `multi_page/*.tex` (5) as `is_system = true`,
+   `user_id = null`, with keys `frontend, backend-java, backend-python, fullstack, senior-engineer`
+   under each `kind`. Store the source in the `tex_source` column — these are small text files;
+   Storage is for generated output, not for the library.
+2. `validate.py` runs on every write: must contain `\documentclass` and `\begin{document}`;
+   reject `\write18`, `\input{/`, `\openout`, `\immediate\write`; cap at 200 KB. Return a
+   `validation_failed` error listing every problem found, not just the first.
+3. `template_select.py` is v1's `resume_selection.recommend_template` moved across. Change only
+   what is necessary: it returns a template **key**, which the caller resolves to the user's row
+   for that key (preferring their own override of a system key).
+4. Deletion is blocked while any `runs` row references the template — return `409 conflict` with
+   the count, per the arey voice (""Used by 3 applications. Duplicate it instead."").
+
+### Reuse from v1
+- `resume_agent/resume_selection.py` — lift, keep its tests.
+- `config.py TEMPLATE_FILES` — the key naming contract.
+- `single_page/*.tex`, `multi_page/*.tex` — the seed content.
+
+### Tests
+- Port `tests/test_resume_selection.py` unchanged apart from imports. It must still pass.
+- Validation rejects each unsafe macro; the error lists all of them.
+- Duplicating a system template creates a user-owned copy with `derived_from` set.
+- Deleting a referenced template returns 409.
+
+### Definition of done
+Ten templates seeded; the ported selection test green; validation covered.
+
+### Out of scope
+The templates UI (RG-046), compilation (RG-035).","user-data,data,api","3","2","M2 Domain"
+"RG-022 — User-editable prompts for the six run stages","## Product requirement
+
+**Problem.** v1's prompts are five markdown files on disk. They are the product's real
+intelligence, and a user who wants a different reviewing standard cannot change them.
+
+**User story.** As a user I read and edit the prompt used at each of the six stages — targeting,
+generation, review, revision, ATS, cover letter — and I can always get back to the default.
+
+**Acceptance criteria**
+- All six prompts are visible, editable, and versioned.
+- Saving creates a new version; I can view history and restore any earlier version.
+- ""Reset to default"" restores the system prompt without losing my history.
+- A prompt that drops a required variable cannot be saved.
+- A run records which prompt version it used.
+
+## Technical plan
+
+### Files
+```
+apps/api/resume_api/schemas/prompts.py
+apps/api/resume_api/repositories/prompts.py
+apps/api/resume_api/routers/prompts.py
+apps/api/resume_api/pipeline/prompts.py        render_prompt, ported from v1
+supabase/seed/prompts/{targeting,generation,review,revision,ats,cover_letter}.md
+supabase/migrations/0014_seed_prompts.sql
+```
+
+### Required variables per stage (validation contract)
+Taken from the actual `render_prompt` call sites in v1 `graph.py`:
+
+| Stage | Required `{{VARS}}` |
+| --- | --- |
+| targeting | COMPANY_NAME, JOB_TITLE, JD_TEXT, SOURCE_OF_TRUTH |
+| generation | TARGETING_BRIEF, JD_TEXT, BASE_RESUME_TEX, SOURCE_OF_TRUTH |
+| review | COMPANY_NAME, JOB_TITLE, REVISION_COUNT, TARGETING_BRIEF, JD_TEXT, SOURCE_OF_TRUTH, PREVIOUS_MUST_FIX, RESUME_TEX |
+| revision | COMPANY_NAME, JOB_TITLE, TARGETING_BRIEF, JD_TEXT, SOURCE_OF_TRUTH, RESUME_TEX, RESUME_MUST_FIX, FIX_RESOLUTION_MATRIX, RESUME_SCORE, RESUME_TARGET_SCORE, RESUME_CATEGORY_SCORES, ATS_TOP_ACTIONS, ATS_UNMET_HARD_REQUIREMENTS |
+| cover_letter | COMPANY_NAME, JOB_TITLE, TARGETING_BRIEF, JD_TEXT, RESUME_TEX, SOURCE_OF_TRUTH, FIX_RESOLUTION_SUMMARY |
+| ats | (new in v2 — the ATS stage is deterministic in v1; this prompt only shapes the LLM's *explanation* of ATS findings, vars: JD_TEXT, ATS_FINDINGS) |
+
+### Routes
+```
+GET    /v1/prompts                        active prompt per stage, with is_customised
+GET    /v1/prompts/{stage}/versions
+POST   /v1/prompts/{stage}                { body } → new version, becomes active
+POST   /v1/prompts/{stage}/restore        { version }
+POST   /v1/prompts/{stage}/reset          back to the system default
+POST   /v1/prompts/{stage}/validate       dry-run the variable check
+```
+
+### Steps
+1. Seed the five v1 prompt files verbatim as `user_id = null, version = 1` rows. Do not reword them.
+2. `render_prompt` keeps v1's `{{VAR}}` substitution semantics exactly. It now takes a body string
+   rather than a filename, and raises `ValidationFailed` on an unfilled variable at render time.
+3. Validation on save: extract `{{...}}` tokens from the body, diff against the required set for
+   that stage. Missing required → reject, naming each. Unknown extra token → reject (it would
+   render empty and silently degrade the prompt).
+4. Resolution order at run time: the user's active version for the stage, else the system row.
+   The chosen `prompt_id`+`version` per stage is written into `runs.token_usage.prompts`.
+
+### Reuse from v1
+`resume_agent/prompts/*.md` (all five, verbatim), `prompt_loader.render_prompt` and
+`distill_governance_prompt` (the governance/system prompt derived from
+`base/resume-proj-instructions.txt` — keep it; it is what stops fabrication).
+
+### Tests
+- Every seeded prompt passes its own variable validation.
+- Saving a prompt missing `{{JD_TEXT}}` is rejected and names it.
+- Restore brings back an exact earlier body.
+- Reset leaves version history intact.
+
+### Definition of done
+Six stages seeded and validating; a run records its prompt versions.
+
+### Out of scope
+The prompt editor UI (RG-045).","user-data,data,api","3","2","M2 Domain"
+"RG-023 — BYOK provider keys","## Product requirement
+
+**Problem.** v1 reads `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` from `.env` — a single operator's
+keys. v2 is bring-your-own-key: each user pays for their own runs.
+
+**User story.** As a user I add my Anthropic and OpenAI keys once, see only the last four
+characters afterwards, and can rotate or revoke them at any time.
+
+**Acceptance criteria**
+- A key is never returned by any API response after it is saved, in any form.
+- A key is encrypted at rest with a key the database alone does not hold.
+- Starting a run without the required provider key gives a clear, actionable message naming the
+  provider — not a 500 from the LLM SDK.
+- I can test a key before saving it.
+
+## Technical plan
+
+### Files
+```
+apps/api/resume_api/crypto.py               envelope encryption helpers
+apps/api/resume_api/repositories/keys.py
+apps/api/resume_api/routers/keys.py
+apps/api/resume_api/llm/credentials.py      resolve keys for a run
+```
+
+### Routes
+```
+GET    /v1/keys                 [{ provider, label, last_four, created_at, last_used_at }]
+POST   /v1/keys                 { provider, label, secret } → 201, body has no secret
+POST   /v1/keys/test            { provider, secret } → { ok, model_count } — never persists
+DELETE /v1/keys/{id}
+```
+
+### Steps
+1. Encrypt with AES-256-GCM using a data key derived per user from a master key held in the API's
+   secret store (never in Postgres). Store `ciphertext = nonce || tag || payload` as bytea.
+   `crypto.py` exposes only `seal(user_id, plaintext)` / `open(user_id, ciphertext)`.
+2. Decryption happens once per run, in memory, inside the pipeline process. Keys are never bound
+   to a log context, never in an exception message, never in `runs` jsonb. The RG-007 redaction
+   processor is the second line of defence, not the first.
+3. `POST /v1/keys/test` calls the provider's cheapest metadata endpoint (`GET /v1/models`) and
+   returns only `ok` and a count.
+4. Preflight in the run creator (RG-032): resolve every provider the selected models require; if
+   one is missing return `400 missing_api_key` with `details.provider`. The UI deep-links to
+   settings from that code.
+
+### Tests
+- `seal`/`open` round-trips; a ciphertext sealed for user A fails to open for user B.
+- No response schema in the OpenAPI document contains a `secret` field — assert this in a test
+  that walks the generated schema.
+- A run started without the needed key returns `missing_api_key`, and no LLM call is attempted.
+- Redaction test: force an exception carrying a key; assert it is absent from the log output.
+
+### Definition of done
+All four tests green; a security note in the README explaining the threat model plainly.
+
+### Out of scope
+Billing, usage limits per key, org-shared keys.","user-data,data,api,security","3","2","M2 Domain"
+"RG-030 — Port the LangGraph pipeline to the API","## Product requirement
+
+**Problem.** The generation pipeline is the product. It works today in v1 and must not regress
+while moving off Streamlit.
+
+**Outcome.** The same graph, the same nodes, the same termination behaviour — running inside
+FastAPI, per user, against database-backed inputs.
+
+**Acceptance criteria**
+- The node sequence is unchanged from v1 and observable in a run's event log.
+- Every v1 pipeline test passes against the ported code with import-path changes only.
+- Two users running simultaneously never see each other's state.
+
+## Technical plan
+
+This is a **port, not a rewrite**. Do not restructure the graph, rename nodes, or ""simplify"" the
+routing. Read `plan/01-v1-reuse-map.md` before starting.
+
+### Files
+```
+apps/api/resume_api/pipeline/state.py       ← v1 resume_agent/state.py
+apps/api/resume_api/pipeline/graph.py       ← v1 resume_agent/graph.py
+apps/api/resume_api/pipeline/budgets.py     ← v1 config.py MAX_* constants
+apps/api/resume_api/pipeline/jd_loader.py   ← v1 jd_loader.py
+apps/api/tests/pipeline/                    ← v1 tests/, ported
+```
+
+### The graph, unchanged
+```
+START → resolve_jd_input →(stop if no JD)→ load_inputs → create_targeting_brief
+      → generate_resume → review_documents → ats_check_resume
+      →(revise)→ revise_documents → review_documents   (loop)
+      →(persist)→ generate_cover_letter → persist_outputs → compile_pdfs → END
+```
+
+### What changes, and only this
+1. **Checkpointer.** `make_sqlite_checkpointer` → `AsyncPostgresSaver` against Supabase, with
+   `thread_id = run_id`. v1's own comment already calls for this. Delete the SQLite path entirely.
+2. **Input loading.** `load_inputs` no longer reads files. It takes a `RunInputs` dataclass
+   assembled by the caller: rendered source of truth (RG-020), governance prompt, template
+   `tex_source` (RG-021), and the six resolved prompt bodies (RG-022).
+3. **Persistence.** `persist_outputs` writes to `runs` + `documents` + Storage (RG-006) instead of
+   `companies/<slug>/<slug>/`. The `review` dict it builds maps field-for-field onto the `runs`
+   columns — keep the same keys.
+4. **Compilation.** `compile_pdfs` calls the LaTeX service (RG-035), not a local binary.
+5. **Clients.** Injected per run with the user's BYOK credentials (RG-031), never constructed
+   from environment defaults inside the graph.
+
+### What must not change
+`route_after_review` in full: the total-call cap, the revision-call cap, the max-revisions cap,
+the empty-`failing_documents` exit, **and the <50% fix-resolution-rate bail-out**. The cover
+letter still generates exactly once, after the loop. `failing_documents` still considers both
+`resume_score` and `ats_total_score`. `ats_check_resume` still swallows its own errors into
+`ats_error`. `build_persist_warnings` still runs. `strip_code_fence` still runs on every LLM
+output. `_ensure_llm_budget` still guards every provider call.
+
+Note a latent v1 bug to fix in passing: `build_persist_warnings` references
+`COVER_LETTER_PASS_SCORE`, which is not imported in `graph.py`. Import it from `budgets.py`.
+
+### Reuse from v1
+`graph.py`, `state.py`, `jd_loader.py` — near-verbatim. `tests/test_graph_helpers.py`,
+`test_graph_integration.py`, `test_jd_loader.py` — the regression net for this whole ticket.
+
+### Tests
+- All ported v1 tests pass.
+- New: routing table test over `route_after_review` — one case per exit condition, including the
+  fix-resolution bail-out.
+- New: two concurrent runs for different users produce independent final states.
+- New: a run resumed from its checkpoint after a simulated process restart completes correctly.
+
+### Definition of done
+Ported tests green, routing table complete, concurrency test green.
+
+### Out of scope
+HTTP routes (RG-032), ATS internals (RG-033), compilation (RG-035).","pipeline,pipeline,api","5","1","M2 Domain"
+"RG-031 — Provider abstraction and per-user model budgets","## Product requirement
+
+**Problem.** v1 hard-splits work between a Claude review client and an OpenAI generation client
+with env-var keys and global call caps. v2 needs the same split, but per user, with the user's
+keys and their own ceilings.
+
+**User story.** As a user I choose which model handles generation, review, and revision, and I
+set how many revision cycles a run may spend.
+
+**Acceptance criteria**
+- Three model roles are configurable: generation, review, revision.
+- A run stops at my configured budget, and tells me it stopped rather than failing silently.
+- A hard server-side ceiling above my setting protects me from a runaway configuration.
+- A provider outage produces a retryable, named error — not a stack trace.
+
+## Technical plan
+
+### Files
+```
+apps/api/resume_api/llm/base.py         LLMClient protocol: complete(system, user, max_tokens)
+apps/api/resume_api/llm/anthropic.py    ← v1 claude_client.py
+apps/api/resume_api/llm/openai.py       ← v1 openai_client.py
+apps/api/resume_api/llm/catalog.py      ← v1 catalog.py, extended with pricing
+apps/api/resume_api/llm/factory.py      ← v1 factory.py, now user-scoped
+apps/api/resume_api/llm/pricing.py
+apps/api/resume_api/pipeline/budgets.py
+```
+
+### Budget contract
+Defaults are v1's numbers, now per-user editable with a server ceiling:
+
+| Setting | v1 | Default | User max | Server ceiling |
+| --- | --- | --- | --- | --- |
+| max_revisions | 1 | 1 | 5 | 5 |
+| resume_pass_score | 8.0 | 8.0 | 9.5 | — |
+| ats_pass_threshold | 80 | 80 | 95 | — |
+| max_total_llm_calls | 16 | 16 | 24 | 30 |
+| max_openai_calls | 4 | 4 | 8 | 10 |
+| max_claude_calls | 8 | 8 | 12 | 16 |
+| max_revision_calls | 5 | 5 | 8 | 10 |
+
+### Steps
+1. Keep `parse_strict_json_object` from v1's `claude_client.py` — the review and targeting nodes
+   depend on strict JSON parsing, and it already handles fenced output.
+2. `factory.for_run(user_id, profile)` resolves the three role clients from the profile's model
+   choices plus the user's decrypted keys, raising `missing_api_key` before the graph starts.
+3. Retries: 3 attempts, exponential backoff with jitter, on 429 and 5xx only. Never retry a 400 —
+   that is a prompt bug and retrying burns the user's money.
+4. `_ensure_llm_budget` reads the per-run budget object rather than module constants. Exceeding a
+   budget raises `BudgetExceeded`, which the graph turns into a persisted warning, exactly as v1
+   does — a budget stop still produces usable output.
+5. Every call goes through `telemetry.record_llm_call` (RG-007).
+
+### Reuse from v1
+`llm/factory.py`, `catalog.py`, `claude_client.py`, `openai_client.py` — ported.
+`tests/test_model_catalog.py` — ported. `cli_proxy/` — **dropped**, do not port.
+
+### Tests
+- Ported catalog test passes.
+- A fake client that always 429s retries three times, then raises `upstream_failed`.
+- A 400 is not retried.
+- A user budget above the server ceiling is clamped to the ceiling, not honoured.
+
+### Definition of done
+Tests green; budgets visible in the run record.
+
+### Out of scope
+Settings UI (RG-047).","pipeline,pipeline,api","3","2","M2 Domain"
+"RG-032 — Run orchestration and live progress","## Product requirement
+
+**Problem.** v1 streams graph nodes straight into the Streamlit process. If the tab closes, the
+run is gone. A generation takes minutes and makes real, paid LLM calls — losing one is expensive.
+
+**User story.** As a user I start a generation, watch each stage complete, navigate away, close
+the tab, come back, and still see the run's progress and its result.
+
+**Acceptance criteria**
+- Starting a run returns immediately with a run id.
+- Progress is visible within a second of each stage completing.
+- Refreshing the page mid-run resumes the live view with no lost events.
+- A failed run shows which stage failed and why, in one sentence.
+- A run can be cancelled, and cancelling stops further LLM spend.
+
+## Technical plan
+
+Decision D4: FastAPI `BackgroundTasks` for v2.0, with run state entirely in Postgres so the swap
+to a real queue is an enqueue-call change.
+
+### Files
+```
+apps/api/resume_api/routers/runs.py
+apps/api/resume_api/services/run_service.py     create, execute, cancel
+apps/api/resume_api/services/run_events.py      append + SSE tail
+apps/web/src/hooks/useRunStream.ts
+```
+
+### Routes
+```
+POST   /v1/applications/{id}/runs      { template_id?, compile_pdf } → { run_id } (202)
+GET    /v1/runs/{id}                   full run record
+GET    /v1/runs/{id}/events            SSE: replay all, then tail
+POST   /v1/runs/{id}/cancel
+```
+
+### Event contract
+One event per completed graph node, plus lifecycle events:
+```json
+{ ""seq"": 4, ""node"": ""review_documents"", ""status"": ""completed"",
+  ""label"": ""Reviewed against the rubric"",
+  ""payload"": { ""resume_score"": 8.4, ""revision_count"": 0 },
+  ""at"": ""2026-07-31T14:02:11Z"" }
+```
+`label` is arey-voice display copy computed server-side, so the client never maps node names to
+prose. `payload` carries only scalars — never document bodies.
+
+### Steps
+1. `POST /runs` validates: JD present and ≥ 300 chars (v1's `MIN_JD_TEXT_LENGTH`), keys resolvable
+   (RG-023), a template selected or recommendable. It writes `runs(status='queued')` and returns
+   before any LLM call. All preflight failures are 400s with named codes.
+2. Execution wraps v1's `stream_graph` generator: for each `(node_name, node_state)` yielded,
+   append a `run_events` row in the same transaction as the `runs` partial update. Ordering comes
+   from a per-run `seq` sequence, so replay is exact.
+3. SSE handler: `?after_seq=N` replays everything after N from the table, then tails via Postgres
+   `LISTEN/NOTIFY`. Heartbeat comment every 15 s so proxies do not drop the connection.
+4. `useRunStream` reconnects with the last seen `seq`, so a refresh or a dropped connection loses
+   nothing. On `succeeded` it invalidates the run query and stops.
+5. Cancellation sets `runs.status='cancelled'`; the executor checks the flag between nodes and
+   stops. Mid-node LLM calls are allowed to finish — killing them wastes the spend already made.
+6. Terminal states always write `finished_at`, and `error` on failure. A crashed process leaves a
+   run `running`; a startup sweep marks runs older than 30 minutes as `failed` with a stale-run
+   message.
+
+### Reuse from v1
+`graph.stream_graph` — the streaming generator already yields exactly the right granularity.
+v1's `app.py run_generation` shows which node names map to which user-facing stage labels.
+
+### Tests
+- Start → all events appear in order → run reaches `succeeded`.
+- Disconnect after seq 3, reconnect with `after_seq=3`, receive 4..n with no gap and no duplicate.
+- Cancel mid-run: status is `cancelled`, and no further `run_events` are appended.
+- Preflight: a 200-char JD is rejected with `jd_too_short` and no run row is created.
+
+### Definition of done
+Four tests green; a refresh mid-run visibly resumes.
+
+### Out of scope
+The generation screen UI (RG-042).","pipeline,pipeline,api","5","1","M3 Product"
+"RG-033 — ATS checker as a service module","## Product requirement
+
+**Problem.** The ATS scorer is a separate local package (`ats-checker/`) that v1 imports
+opportunistically and tolerates the absence of. It is one of the product's two headline numbers,
+so it needs to be a first-class, always-present dependency — and reachable on its own, so an
+imported resume can be scored without generating anything.
+
+**User story.** As a user I see an ATS score with its keyword, structural, and semantic
+components, what matched, what is missing, and the highest-value actions — for a generated resume
+or one I imported.
+
+**Acceptance criteria**
+- The same resume and JD always produce the same score. No LLM in this path.
+- Missing keywords are split into required and preferred.
+- Unmet hard requirements are listed explicitly.
+- A score can be requested for any resume text, outside a generation run.
+
+## Technical plan
+
+### Files
+```
+apps/api/resume_api/ats/                  vendored from ats-checker/ats_checker/
+  __init__.py action_verbs.py config.py hard_requirements.py jd_cleaner.py
+  keyword_extractor.py resume_parser.py scorer.py section_parser.py synonyms.py
+apps/api/resume_api/services/ats_service.py
+apps/api/resume_api/routers/ats.py
+apps/api/tests/ats/                       ← ats-checker/tests/
+```
+
+### Routes
+```
+POST /v1/ats/check    { resume_text | document_id, jd_text } → AtsResult
+```
+
+### Contract — keep v1's key names exactly
+```
+ats_total_score, ats_grade, ats_keyword_score, ats_structural_score, ats_semantic_score,
+ats_matched[], ats_missing_required[], ats_missing_preferred[], ats_top_actions[],
+ats_hard_requirements[{description, met}], ats_all_hard_met, ats_error
+```
+These are the keys `graph.persist_outputs` writes and the result view reads. Renaming them
+breaks the port for no gain.
+
+### Steps
+1. Vendor the package into `apps/api/resume_api/ats/` as a real dependency (it is the maintainer's
+   own code; a git submodule would add friction for no benefit). Record the source commit in a
+   header comment. Bring its tests.
+2. `ats_service.check(resume_tex, jd_text)` wraps it, strips LaTeX to plain text before scoring
+   (the scorer expects prose, not markup), and returns the dict above. It **never raises** — any
+   failure returns `{""ats_error"": ""...""}`, preserving v1's behaviour where a bad ATS check does
+   not kill a run.
+3. `ATS_PASS_THRESHOLD = 80` (""Excellent"") stays the pass bar, now per-user overridable (RG-031).
+4. The standalone route is what makes the import flow (RG-044) work.
+
+### Reuse from v1
+The entire `ats-checker` package, verbatim. `resume_agent/ats_client.py` shows the wrapping
+contract. `graph.ats_check_resume` shows the error-tolerance requirement.
+
+### Tests
+- Ported `ats-checker` tests pass unchanged.
+- Determinism: the same input scored twice is byte-identical.
+- A malformed JD returns `ats_error` and does not raise.
+- LaTeX stripping: a `.tex` resume and its plain-text equivalent score within 2 points.
+
+### Definition of done
+Ported tests green plus the four above.
+
+### Out of scope
+The ATS UI and evidence gate (RG-036, RG-043).","pipeline,pipeline,api","3","2","M2 Domain"
+"RG-034 — Review rubric and scoring service","## Product requirement
+
+**Problem.** The human-reviewer score is the product's other headline number. In v1 it is a
+weighted rubric computed in `scoring.py` from category scores the reviewer model returns.
+
+**User story.** As a user I see not just an overall score but the eight weighted categories
+behind it, so I know what to fix.
+
+**Acceptance criteria**
+- The overall score is reproducible from the category scores shown.
+- A reviewer response missing a category degrades gracefully — that category scores zero and is
+  reported as missing, rather than the run failing.
+- The category weights are visible in the UI.
+
+## Technical plan
+
+### Files
+```
+apps/api/resume_api/pipeline/scoring.py     ← v1 scoring.py, verbatim
+apps/api/tests/test_scoring.py              ← v1, verbatim
+packages/contracts/src/rubric.ts            weights mirrored for display
+```
+
+### The rubric — do not change these weights
+Resume: jd_skills_keyword_match .20 · role_domain_relevance .15 ·
+achievement_evidence_strength .15 · credibility_source_truth_compliance .15 ·
+single_page_compliance .15 · targeting_brief_compliance .10 ·
+ats_latex_formatting_safety .05 · recruiter_impression_seniority_alignment .05
+
+Cover letter: jd_company_alignment .30 · evidence_relevance .25 · motivation_domain_fit .20 ·
+clarity_tone .15 · credibility_no_fabrication .10
+
+### Steps
+1. Copy `scoring.py` across with no edits. `weighted_score` clamps each category to 0–10, treats
+   a missing category as 0, and reports it in `missing_categories` — keep all of that.
+2. Mirror the weights into `packages/contracts/src/rubric.ts` for the result view, and add a test
+   asserting the TS weights sum to 1.0 and match the Python dict key-for-key. Two copies of a
+   constant is acceptable only with a test that keeps them honest.
+
+### Reuse from v1
+`resume_agent/scoring.py` and `tests/test_scoring.py` — verbatim, both.
+
+### Tests
+- Ported test passes unchanged.
+- Python and TS rubrics agree (key set and weights).
+
+### Definition of done
+Both green.
+
+### Out of scope
+Rendering (RG-043).","pipeline,pipeline,api","2","2","M2 Domain"
+"RG-035 — LaTeX compilation service","## Product requirement
+
+**Problem.** v1 shells out to a local LaTeX install. Most machines do not have one, and in a
+multi-user product the `.tex` being compiled is untrusted user input.
+
+**User story.** As a user I edit the LaTeX of my resume, press compile, and get a PDF in a few
+seconds — or a readable error pointing at the line that broke.
+
+**Acceptance criteria**
+- Compilation works with no LaTeX installed on the API host or the user's machine.
+- A malicious `.tex` cannot read the filesystem, reach the network, or run a shell.
+- Compilation fails fast — no run hangs on a LaTeX error prompt.
+- A failure shows the first meaningful error line, not 400 lines of log.
+
+## Technical plan
+
+Decision D2: a Tectonic container as a separate service.
+
+### Files
+```
+services/latex/Dockerfile              tectonic on a slim base
+services/latex/app.py                  POST /compile → application/pdf | 422 + parsed error
+services/latex/parse_log.py            TeX log → first meaningful error {line, message}
+apps/api/resume_api/services/latex.py  client
+apps/api/resume_api/routers/compile.py
+```
+
+### Routes
+```
+POST /v1/documents/{id}/compile    → { document_id (pdf), pages, warnings[] }
+POST /v1/compile/preview           { tex } → same, not persisted (LaTeX editor preview)
+```
+
+### Hardening (all required)
+- `tectonic -X compile --untrusted`, which disables shell-escape and external commands.
+- Container runs as a non-root user, read-only root filesystem, scratch on a tmpfs.
+- No network egress from the container except the Tectonic package cache, which is **pre-warmed
+  into the image** at build time so runtime egress can be blocked entirely.
+- 20 s wall-clock timeout, 512 MB memory, 1 CPU. `-halt-on-error` so it never waits for input.
+- Input capped at 200 KB, and re-run through the RG-021 macro denylist before compiling.
+
+### Steps
+1. Two-pass compile (references and page counts need it); parse the log after the final pass.
+2. `parse_log.py` returns the first `! ` line with its `l.NNN` line number and a one-sentence
+   summary. Full log goes to the response `details`, never into the user-facing message.
+3. On success, store the PDF via `BlobStore` and insert a `documents` row of kind `*_pdf`.
+4. `compile_pdfs` in the graph calls this service and preserves v1's behaviour exactly: failures
+   populate `compile_errors` and the run still ends `complete_with_compile_errors` — a PDF failure
+   never loses the `.tex`.
+5. Cache by `sha256(tex)`: identical source returns the stored PDF without recompiling.
+
+### Reuse from v1
+`resume_agent/latex_compile.py` for the interface shape (`compile_tex_file(src, out, requested)`
+→ `success`/`error`) and `graph.compile_pdfs` for the error-tolerance contract. The subprocess
+implementation itself is replaced.
+
+### Tests
+- A known-good template compiles to a PDF with the expected page count.
+- A `.tex` with a deliberate error returns 422 with the correct line number.
+- A `\write18{...}` payload is rejected before reaching Tectonic.
+- An infinite `\loop` is killed by the timeout and returns a timeout error, not a hang.
+- The hash cache returns the second request without invoking Tectonic (assert via a call counter).
+
+### Definition of done
+All five tests green; the container image builds in CI.
+
+### Out of scope
+The LaTeX editor UI (RG-043).","pipeline,pipeline,infra,security","5","2","M3 Product"
+"RG-036 — Evidence-gated ATS keyword fixes","## Product requirement
+
+**Problem.** The fastest way to raise an ATS score is to paste in missing keywords. That is also
+how a resume becomes a lie and a candidate gets caught in an interview. The product's position is
+that a keyword may only be added if the user can point at where they actually did it.
+
+**User story.** The ATS panel says I am missing ""Kubernetes"". To add it, I must attach a company
+or project from my source of truth and a specific experience bullet that evidences it. Once I do,
+the keyword is added to the resume **and** saved back to my source of truth, so every future
+resume knows it.
+
+**Acceptance criteria**
+- A missing keyword cannot be accepted without both an owning company/project and a bullet.
+- Accepting writes the evidence into the source of truth, not just into this one resume.
+- I can write a new bullet inline while accepting, and it is saved to the source of truth too.
+- I can dismiss a keyword as not applicable, and it stays dismissed for this application.
+- The resume is regenerated or patched with the keyword only after the evidence exists.
+
+## Technical plan
+
+This is the product's most opinionated feature. It has no v1 equivalent — build it carefully.
+
+### Files
+```
+apps/api/resume_api/schemas/evidence.py
+apps/api/resume_api/services/evidence_service.py
+apps/api/resume_api/routers/evidence.py
+supabase/migrations/0015_keyword_decisions.sql
+```
+
+### Schema
+`keyword_decisions` — user_id, application_id, run_id, keyword citext,
+decision `('accepted','dismissed','deferred')`, sot_company_id null, sot_project_id null,
+sot_bullet_id null, created_bullet bool, note, created_at.
+Unique `(application_id, lower(keyword))`.
+
+### Routes
+```
+GET  /v1/runs/{id}/keywords                  missing + matched + prior decisions, merged
+POST /v1/runs/{id}/keywords/{kw}/accept      { company_id | project_id, bullet_id | new_bullet }
+POST /v1/runs/{id}/keywords/{kw}/dismiss     { note? }
+POST /v1/runs/{id}/keywords/apply            regenerate the resume with the accepted set
+```
+
+### The gate — server-enforced, not a UI convention
+`accept` rejects with `evidence_required` unless:
+1. exactly one of `company_id` / `project_id` is present and owned by the caller; **and**
+2. either `bullet_id` (owned, and belonging to that company or project) or `new_bullet` with at
+   least 40 characters of text is present.
+
+On success, in one transaction:
+- if `new_bullet`: insert an `sot_bullets` row under that company/project;
+- upsert an `sot_skills` row for the keyword, appending the bullet id to `evidence_bullet_ids`;
+- insert the `keyword_decisions` row.
+
+The source-of-truth write is the point of the feature. A keyword accepted here is permanently
+part of the user's record and will be available to every future application. This is what makes
+the gate a compounding asset rather than a nag.
+
+### `apply`
+Runs the revision node once with the accepted keywords and their evidence bullets appended to the
+prompt context, then re-runs the ATS check, and writes a new `runs` row linked to the same
+application. It never edits the previous run — score history stays intact.
+
+### Tests
+- Accept with no bullet → `evidence_required`; nothing is written (assert the transaction rolled back).
+- Accept with a bullet belonging to a different company → rejected.
+- Accept with `new_bullet` → the bullet exists in the source of truth afterwards and the skill row
+  references it.
+- Dismiss persists across a page reload and across a re-run of the ATS check.
+- `apply` produces a new run whose ATS score is ≥ the previous one for a seeded fixture.
+
+### Definition of done
+All five tests green; the gate is impossible to bypass through the API.
+
+### Out of scope
+The panel UI (RG-043).","pipeline,pipeline,api,product","5","2","M4 Completeness"
+"RG-037 — Import an existing resume for scoring","## Product requirement
+
+**Problem.** Users already have resumes they have sent out. v1 can only score what it generates,
+so all that history is invisible to the tracker and gets no feedback.
+
+**User story.** I upload or paste a resume I already sent, attach the job description, and get
+the same ATS and review scores as a generated one — and it appears in my pipeline alongside
+everything else.
+
+**Acceptance criteria**
+- I can import by `.tex`, `.pdf`, or pasted text.
+- An imported application is scored on both dimensions and marked clearly as imported.
+- Imported applications appear in the pipeline and can be tracked through interview rounds.
+- I can convert an imported application into a generated one, reusing its job description.
+
+## Technical plan
+
+### Files
+```
+apps/api/resume_api/services/import_service.py
+apps/api/resume_api/routers/imports.py
+apps/api/resume_api/parsers/pdf_text.py       pypdf extraction
+apps/api/resume_api/parsers/tex_text.py       LaTeX → plain text (shared with RG-033)
+```
+
+### Routes
+```
+POST /v1/applications/import      multipart: file? + { company_name, job_title, jd_text, resume_text? }
+                                  → { application_id, run_id }
+POST /v1/applications/{id}/convert-to-generated  → { application_id }
+```
+
+### Steps
+1. Create the `applications` row with `source = 'imported'`, store the original file as a
+   `documents` row of kind `imported_resume`.
+2. Extract text: `.tex` → `tex_text`; `.pdf` → `pypdf`, and if the extraction yields under 200
+   characters, reject with `unreadable_pdf` (""This looks like a scanned PDF. Paste the text
+   instead."") rather than scoring garbage. No OCR in v2.0.
+3. Create a `runs` row with `status='succeeded'` that skips generation entirely and runs only two
+   stages: `ats_check` (RG-033) and `review_documents` (the reviewer prompt against the imported
+   text, so the scores are comparable to a generated run).
+4. Emit `run_events` for both stages so the same UI (RG-042) renders the import progress.
+5. `convert-to-generated` creates a **new** application seeded with the same company, title, and
+   JD, linked back via `derived_from`. The import is never mutated.
+
+### Reuse from v1
+The reviewer prompt and `scoring.attach_scores` are used unchanged, which is what makes an
+imported score directly comparable to a generated one.
+
+### Tests
+- `.tex`, `.pdf`, and pasted-text imports each produce a run with both scores.
+- A scanned (image-only) PDF returns `unreadable_pdf` and creates no application.
+- An imported application appears in the pipeline list with the imported marker.
+- Convert creates a new application and leaves the original untouched.
+
+### Definition of done
+All four tests green.
+
+### Out of scope
+The import UI (RG-044).","pipeline,pipeline,api","3","2","M4 Completeness"
+"RG-040 — Pipeline screen (application tracker)","## Product requirement
+
+**Problem.** v1's ""Applied Jobs"" tab lists folders on disk with a status dropdown. It cannot
+answer the question a job search actually asks: what needs my attention today.
+
+**User story.** I open the app and immediately see every application, where each one stands, and
+what I owe it next.
+
+**Acceptance criteria**
+- Every application shows company, role, both scores, status, and last activity.
+- I can filter by status and search by company or role.
+- Generated and imported applications are visually distinguishable at a glance.
+- I can advance status and record an interview round without leaving the list.
+- With no applications, the empty state offers exactly two actions: generate, or import.
+
+## Technical plan
+
+### Files
+```
+apps/web/src/app/(app)/pipeline/page.tsx           server component, initial fetch
+apps/web/src/components/pipeline/ApplicationTable.tsx
+apps/web/src/components/pipeline/StatusCell.tsx    inline status change
+apps/web/src/components/pipeline/ScorePair.tsx     ATS + review, mono numerals
+apps/web/src/components/pipeline/PipelineFilters.tsx
+apps/web/src/components/pipeline/RoundTracker.tsx  popover: round count, current round, next action
+apps/api/resume_api/routers/applications.py        list, patch status
+```
+
+### Presentation
+Columns: **Company / role** (two-line cell, role in `--text-secondary`) · **Source** (a Badge:
+""Generated"" / ""Imported"") · **ATS** · **Review** · **Status** · **Next action** · **Updated**.
+
+Per the arey guide: all numbers and timestamps in `--font-mono`. Relative time in the cell
+(""3 d ago""), absolute in the tooltip. Status is a colour dot plus a label — never a coloured row
+background, never a left-border stripe. Scores show as `82` and `8.4` with the threshold implied
+by the dot colour, not by a progress bar in every row.
+
+Below 940px the table becomes a stacked card list; the same data, no horizontal scroll.
+
+### Steps
+1. Server-render the first page; TanStack Query takes over for filtering and mutation.
+2. Filters are URL state (`?status=&q=`), so a filtered view is linkable and survives a refresh.
+3. Status change is an optimistic `PATCH /v1/applications/{id}`, reverting with a toast on failure.
+4. `RoundTracker` edits `round_count`, `current_round`, and `next_action` in a popover — v1's
+   `application_status.json` fields, now first-class.
+5. Cursor pagination at 50 rows with an infinite-scroll sentinel.
+6. Empty state: one line (""No applications yet."") and two buttons. No illustration.
+
+### Reuse from v1
+`app.py render_application_browser` / `_application_row` for the field set and the status
+vocabulary; `storage.default_application_status()` for the exact fields to expose.
+
+### Tests
+- Playwright: filter by status narrows the list and updates the URL.
+- Optimistic status change reverts and toasts when the API 500s.
+- The imported marker renders for an imported application.
+- Empty state renders both actions for a new user.
+
+### Definition of done
+Four tests green at 360px and 1440px.
+
+### Out of scope
+Bulk actions, CSV export.","screens,web,product","5","2","M3 Product"
+"RG-041 — New application: input and launch","## Product requirement
+
+**Problem.** v1's generate tab asks for company, title, and a JD, then runs. It gives no
+confidence about what is about to happen or what it will cost.
+
+**User story.** I paste a job description, confirm the template the system suggests, and start —
+knowing which models will run and roughly what it will cost before I commit.
+
+**Acceptance criteria**
+- I can supply the JD by paste or URL, and see it was fetched successfully before starting.
+- A template is recommended with a stated reason, and I can override it.
+- I see which three models will run and an estimated cost before pressing start.
+- A JD under 300 characters blocks the start with a clear reason.
+- Pressing start navigates straight to the live run view.
+
+## Technical plan
+
+### Files
+```
+apps/web/src/app/(app)/applications/new/page.tsx
+apps/web/src/components/generate/JdInput.tsx           tabs: paste | URL
+apps/web/src/components/generate/TemplatePicker.tsx    recommendation + override
+apps/web/src/components/generate/RunPreflight.tsx      models, budget, estimated cost
+```
+
+### Steps
+1. Three fields — company, job title, JD — then a preflight card. No wizard, no multi-step form;
+   it is four inputs and a button.
+2. JD by URL calls `POST /v1/jd/fetch` (thin wrapper on v1's `jd_loader.fetch_jd_from_url`),
+   showing the fetched character count and the first lines so the user can confirm it worked.
+   v1's `MIN_JD_TEXT_LENGTH` guard is surfaced inline, not as a post-submit error.
+3. On JD blur, call `POST /v1/templates/recommend` and show the recommendation with its reason
+   as helper text. Overriding it is a Select; the reason stays visible.
+4. `RunPreflight` lists the three model roles from the profile, the revision ceiling, and an
+   estimated cost from `llm/pricing.py`. Estimated, and labelled as such — never presented as exact.
+5. Start posts to `POST /v1/applications` then `POST /v1/applications/{id}/runs` and routes to
+   `/applications/{id}/runs/{runId}`.
+6. Autosave the draft to `localStorage` per user, so a long JD paste survives an accidental reload.
+
+### Reuse from v1
+`app.py render_generation_tab` for the field set; `jd_loader.py` for URL fetch and the length
+guard; `resume_selection.py` for the recommendation and its reason string.
+
+### Tests
+- A 200-char JD disables start and explains why.
+- URL fetch failure shows the loader's error message inline, and start stays disabled.
+- The recommendation appears after entering a JD and can be overridden.
+- Start creates an application and lands on the run route.
+
+### Definition of done
+Four tests green.
+
+### Out of scope
+The live run view (RG-042).","screens,web,product","3","2","M3 Product"
+"RG-042 — Live run view","## Product requirement
+
+**Problem.** A generation takes minutes and makes up to sixteen paid LLM calls. Silence during
+that time reads as a hang, and v1 loses the run if the tab closes.
+
+**User story.** I watch each stage complete with a plain-language label, I can leave and come
+back, and when it finishes I land on the result.
+
+**Acceptance criteria**
+- Each stage appears as it completes, with elapsed time.
+- Revision cycles are shown as cycles, not as a confusing repeat of the same stage.
+- Refreshing mid-run resumes the view with no lost or duplicated stages.
+- On failure I see which stage failed and one sentence about why, with a retry.
+- I can cancel.
+
+## Technical plan
+
+### Files
+```
+apps/web/src/app/(app)/applications/[id]/runs/[runId]/page.tsx
+apps/web/src/components/run/RunTimeline.tsx
+apps/web/src/components/run/RunStage.tsx
+apps/web/src/hooks/useRunStream.ts        (from RG-032)
+```
+
+### Stage labels — server-supplied (RG-032), listed here for design reference
+`resolve_jd_input` ""Read the job description"" · `load_inputs` ""Loaded your source of truth"" ·
+`create_targeting_brief` ""Built the targeting brief"" · `generate_resume` ""Wrote the resume"" ·
+`review_documents` ""Reviewed against the rubric"" · `ats_check_resume` ""Scored for ATS"" ·
+`revise_documents` ""Revised the resume"" · `generate_cover_letter` ""Wrote the cover letter"" ·
+`persist_outputs` ""Saved"" · `compile_pdfs` ""Compiled the PDF""
+
+### Presentation
+A vertical timeline. Completed stages show a filled Phosphor check and a mono elapsed time
+(`4.2 s`). The active stage shows a Spinner in place of the glyph. Pending stages are
+`--text-tertiary`. Repeat passes group under a ""Revision 1"" subheading rather than appending a
+duplicate row — this is where v1's stream is confusing.
+
+Review and ATS stages surface their score in the row as it lands, so the user sees the number
+climb across revisions. That is the most reassuring thing the screen can do.
+
+Motion is opacity + 4px rise at 220ms per stage. Nothing bounces. Reduced motion zeroes it.
+
+### Steps
+1. Subscribe via `useRunStream(runId, afterSeq)`; seed `afterSeq` from the server-rendered events
+   already in the page so a refresh never replays what is already shown.
+2. On `succeeded`, redirect to the result view after a 600ms beat so the last stage is visible.
+3. On `failed`, render the failing stage in the error state with `errors.ts` copy and a ""Start
+   again"" button that reuses the same inputs.
+4. Cancel is a quiet Button with a confirm Dialog stating that work already spent is not refunded.
+
+### Reuse from v1
+`app.py run_generation`'s node-to-label mapping and its ordering.
+
+### Tests
+- Mocked SSE: stages render in order with elapsed times.
+- Mid-run refresh shows all prior stages exactly once.
+- A failure event renders the error state and the retry.
+- Two revision cycles group under separate subheadings.
+
+### Definition of done
+Four tests green.
+
+### Out of scope
+The result view (RG-043).","screens,web,product","3","2","M3 Product"
+"RG-043 — Result view: scores, ATS panel, and LaTeX editor","## Product requirement
+
+**Problem.** This is the screen the whole product exists to show. v1 splits it across tabs and
+buries the scores below the LaTeX.
+
+**User story.** I see how the resume scored on both dimensions, exactly what is missing, what I
+can honestly do about it, and I can edit the LaTeX and recompile without leaving the page.
+
+**Acceptance criteria**
+- Both scores are the first thing on the page, with their category and component breakdowns one
+  interaction away.
+- Missing ATS keywords are actionable through the evidence gate — never a one-click ""add"".
+- The LaTeX is visible, editable, and recompilable, with the PDF beside it.
+- Warnings from the run are shown, not hidden.
+- I can download the `.tex` and the `.pdf` for both the resume and the cover letter.
+
+## Technical plan
+
+**Size warning.** This ticket is XL. If it must be split, cut along the three panels below —
+each is independently shippable behind the same route.
+
+### Files
+```
+apps/web/src/app/(app)/applications/[id]/page.tsx
+apps/web/src/components/result/ScoreHero.tsx          the two headline numbers
+apps/web/src/components/result/ReviewPanel.tsx        8 rubric categories, weights, must-fix list
+apps/web/src/components/result/AtsPanel.tsx           components, matched, missing, hard reqs
+apps/web/src/components/result/KeywordGate.tsx        the evidence dialog (RG-036)
+apps/web/src/components/result/TexEditor.tsx          CodeMirror 6, LaTeX mode
+apps/web/src/components/result/PdfPreview.tsx         pdf.js, page nav
+apps/web/src/components/result/WarningsList.tsx
+apps/web/src/components/result/DownloadMenu.tsx
+```
+
+### Layout
+`ScoreHero` full width at the top: two large mono numerals — ATS `82 / 100` with its grade, and
+review `8.4 / 10` — each with a one-line verdict and a threshold marker. No dials, no gauges, no
+gradients; the number *is* the graphic. Below, a three-tab `Tabs`: **Review**, **ATS**,
+**Documents**. Above 1200px, Documents renders as a two-pane split (editor left, PDF right);
+below that it is a `SegmentedControl` between the two.
+
+### `AtsPanel` and the gate
+Missing keywords list as Tags in two groups, required and preferred. Clicking one opens
+`KeywordGate`, a Dialog that requires:
+1. a company or project, picked from the user's source of truth (searchable Select);
+2. a bullet — either an existing one under that company/project, or a new one typed inline
+   (minimum 40 characters, with the helper text ""Describe what you actually did with it"").
+
+The primary Button stays disabled until both are satisfied. There is no bypass, no ""add anyway"".
+On success the Tag moves from missing to matched, and a quiet line confirms it was saved to the
+source of truth — that confirmation is important; it tells the user the work compounds.
+
+""Not applicable"" dismisses the keyword with an optional note.
+
+An ""Apply accepted keywords"" Button appears once at least one is accepted; it calls
+`POST /v1/runs/{id}/keywords/apply` and routes to the new run's live view.
+
+### `TexEditor`
+CodeMirror 6, `--font-mono`, LaTeX syntax highlighting, line numbers. Debounced local autosave;
+explicit ""Save and compile"" for the server round-trip. Compile errors render inline at the
+reported line (RG-035) and as a summary above the editor. Never block editing while compiling.
+
+### `ReviewPanel`
+The eight categories as rows: name, weight (mono), score out of 10, and the reviewer's comment.
+The must-fix list above them, as the reviewer returned it. Both come straight from
+`runs.resume_review`.
+
+### Reuse from v1
+`app.py render_result`, `_render_ats_tab`, `render_tex_editor` for the information architecture —
+v1 already decided what to show; this ticket decides how. `runs.ats` and `runs.resume_review`
+carry v1's exact key names, so the panels read them directly.
+
+### Tests
+- `ScoreHero` renders both scores with mono numerals and the correct grade band.
+- The gate's primary button is disabled without evidence and enabled with it.
+- Accepting a keyword moves the tag and shows the source-of-truth confirmation.
+- Editing the LaTeX and compiling updates the PDF preview.
+- A compile error renders at the correct line.
+- Run warnings appear on the page.
+- `jest-axe`: the dialog traps focus and returns it on close.
+
+### Definition of done
+Seven tests green; the split layout works at 1200px and collapses cleanly below.
+
+### Out of scope
+Version diffing between runs.","screens,web,product","8","1","M3 Product"
+"RG-044 — Import flow UI","## Product requirement
+
+**User story.** I have already applied to twelve jobs with a resume I wrote myself. I want those
+in the tracker, scored, so I know which ones were weak and what to fix next time.
+
+**Acceptance criteria**
+- Import by drag-and-drop file, file picker, or paste.
+- I supply the company, role, and job description alongside the resume.
+- I see the same two scores as a generated application.
+- A scanned PDF tells me plainly to paste the text instead.
+- Importing is reachable from the pipeline empty state and from the sidebar.
+
+## Technical plan
+
+### Files
+```
+apps/web/src/app/(app)/applications/import/page.tsx
+apps/web/src/components/import/ResumeDropzone.tsx     .tex, .pdf, ≤5 MB
+apps/web/src/components/import/ImportForm.tsx
+```
+
+### Steps
+1. Dropzone accepts `.tex` and `.pdf`; a third tab accepts pasted text. On file selection show
+   the filename, size (mono), and the extracted character count as a confidence signal.
+2. Same company / role / JD fields as RG-041, sharing the components — not a second copy.
+3. Submit posts multipart to `POST /v1/applications/import` and routes to the run view, which
+   shows only the two scoring stages (RG-042 handles this without change).
+4. `unreadable_pdf` renders inline on the dropzone with the paste tab pre-selected — recover the
+   user in place rather than sending them back to the start.
+5. On the result view, an imported application shows an ""Imported"" Badge next to the title and a
+   ""Generate a tailored version"" Button calling `convert-to-generated`.
+
+### Tests
+- Drag-and-drop a `.tex` → import succeeds and lands on the run view.
+- An oversized file is rejected client-side with a clear message.
+- `unreadable_pdf` switches to the paste tab with the error shown.
+- The imported badge and the convert action render on the result view.
+
+### Definition of done
+Four tests green.
+
+### Out of scope
+Bulk import.","screens,web,product","3","2","M4 Completeness"
+"RG-045 — Source of truth and prompts screen","## Product requirement
+
+**Problem.** These are the two things that determine output quality, and in v1 both are files on
+disk that a user cannot reach.
+
+**User story.** I curate my career record and, separately, tune the instructions the system uses
+at each stage — and I can always get back to the defaults.
+
+**Acceptance criteria**
+- I can manage companies, projects, bullets, and skills with inline editing and drag reorder.
+- I can see exactly the text that gets injected into prompts.
+- I can edit all six prompts, see version history, restore a version, and reset to default.
+- A prompt missing a required variable cannot be saved, and the error names the variable.
+- Nothing is lost on an accidental navigation.
+
+## Technical plan
+
+### Files
+```
+apps/web/src/app/(app)/source-of-truth/page.tsx        Tabs: Career record | Prompts
+apps/web/src/components/sot/CompanyList.tsx            accordion, dnd-kit reorder
+apps/web/src/components/sot/BulletEditor.tsx           inline textarea, autosave
+apps/web/src/components/sot/SkillGrid.tsx              category groups, evidence links
+apps/web/src/components/sot/RenderedPreview.tsx        read-only, mono, the injected text
+apps/web/src/components/prompts/PromptEditor.tsx       CodeMirror, variable chips
+apps/web/src/components/prompts/VersionHistory.tsx
+```
+
+### Steps
+1. **Career record tab.** Companies as an accordion; each holds projects, each holds bullets.
+   `dnd-kit` for reorder, committing to `POST /source-of-truth/reorder` on drop. Bullet edits
+   autosave on blur with a quiet ""Saved"" — no save button, no dialog.
+2. A skill row shows the bullets that evidence it as small links. A skill with no evidence shows
+   a quiet warning glyph — this is the same standard the ATS gate enforces, applied to the record
+   itself, so the two features feel like one idea.
+3. `RenderedPreview` is a collapsed panel showing `GET /source-of-truth/rendered` verbatim in
+   `--font-mono`. Making the prompt input visible is what lets a user debug bad output themselves.
+4. **Prompts tab.** Six stages down the left as a `SidebarNav`; the editor on the right. Above the
+   editor, the required variables render as `Kbd`-style chips — clicking one inserts it at the
+   cursor. A chip is muted when that variable is absent from the body, so a missing one is visible
+   before saving, not only on the validation error.
+5. A customised prompt shows a ""Modified"" Badge in the stage list and a ""Reset to default"" action.
+   `VersionHistory` is a popover listing versions with timestamps (mono) and a restore action.
+6. `beforeunload` guard on unsaved prompt edits. The career record does not need one — it autosaves.
+
+### Reuse from v1
+`base/source_of_truth.txt` for the record's shape and the rendered format;
+`resume_agent/prompts/*.md` as the default bodies shown when a user resets.
+
+### Tests
+- Reordering bullets persists across a reload.
+- The rendered preview matches `GET /rendered` exactly.
+- Saving a prompt without `{{JD_TEXT}}` shows the named error and does not save.
+- Restoring a version replaces the editor body.
+- Reset restores the system default and clears the ""Modified"" badge.
+
+### Definition of done
+Five tests green.
+
+### Out of scope
+Importing a career record from LinkedIn or a PDF.","screens,web,product","5","2","M3 Product"
+"RG-046 — Templates screen","## Product requirement
+
+**User story.** I keep a small library of LaTeX resume templates, see what each one looks like,
+and add my own by uploading, pasting, or copying an existing one.
+
+**Acceptance criteria**
+- Every template shows a rendered preview, not just a filename.
+- I can add one three ways, and validation problems are explained before I save.
+- I can duplicate any template, including the system ones, and edit my copy.
+- I cannot delete a system template, and deleting one that is in use explains why.
+
+## Technical plan
+
+### Files
+```
+apps/web/src/app/(app)/templates/page.tsx
+apps/web/src/components/templates/TemplateGrid.tsx
+apps/web/src/components/templates/TemplateCard.tsx      preview thumbnail + actions
+apps/web/src/components/templates/AddTemplateDialog.tsx tabs: upload | paste | duplicate
+apps/web/src/components/templates/TemplatePreview.tsx   first-page render
+```
+
+### Steps
+1. Grid of Cards. Each: preview thumbnail, name, kind Badge (""Single page"" / ""Multi page""), a
+   ""System"" Badge where applicable, and a menu with duplicate, edit, delete.
+2. Previews are generated once per template by compiling it with placeholder content (RG-035) and
+   caching the first page as a PNG in Storage. Compile-on-view would be far too slow for a grid.
+3. `AddTemplateDialog`: upload validates client-side for `.tex` and 200 KB, then server-side
+   (RG-021); paste uses CodeMirror; duplicate is a Select over the library plus a name field.
+4. Validation errors list every problem at once, in arey voice: ""Line 40 uses \\write18. Remove it
+   and save again.""
+5. Deleting a template in use surfaces the 409 as ""Used by 3 applications. Duplicate it instead.""
+
+### Reuse from v1
+`single_page/*.tex` and `multi_page/*.tex` are the seeded library; `config.py TEMPLATE_FILES`
+gives the naming.
+
+### Tests
+- The grid shows ten seeded templates with previews.
+- Uploading an invalid `.tex` lists every validation problem.
+- Duplicating a system template creates an editable user copy.
+- Deleting an in-use template shows the conflict message.
+
+### Definition of done
+Four tests green.
+
+### Out of scope
+A visual template designer.","screens,web,product","3","2","M3 Product"
+"RG-047 — Settings screen","## Product requirement
+
+**User story.** In one place I manage my account, my API keys, the models each stage uses, my
+budget ceilings, and my theme.
+
+**Acceptance criteria**
+- Adding a key shows only the last four characters afterwards, forever.
+- I can test a key before saving it.
+- Model choices and budgets are explained in terms of cost and quality, not jargon.
+- Theme changes apply immediately and persist across devices.
+- Deleting my account is possible, explains what is deleted, and requires typing my email.
+
+## Technical plan
+
+### Files
+```
+apps/web/src/app/(app)/settings/page.tsx              sections via SidebarNav
+apps/web/src/components/settings/AccountSection.tsx
+apps/web/src/components/settings/KeysSection.tsx
+apps/web/src/components/settings/ModelsSection.tsx
+apps/web/src/components/settings/BudgetSection.tsx
+apps/web/src/components/settings/AppearanceSection.tsx
+apps/web/src/components/settings/DangerZone.tsx
+```
+
+### Steps
+1. Sections: Account, API keys, Models, Budget, Appearance, Danger zone.
+2. **Keys.** A row per provider: label, `••••` + last four in mono, created and last-used dates.
+   Add opens a Dialog with a masked Input and a ""Test key"" Button that must pass before Save
+   enables. The secret never re-renders after submission.
+3. **Models.** Three Selects — generation, review, revision — each showing the model name and its
+   per-million-token price in mono. A one-line note explains v1's split: a strong model reviews,
+   a cheaper one revises.
+4. **Budget.** Sliders for max revisions (1–5) and the call caps, each with the default marked and
+   the server ceiling shown. An estimated worst-case cost per run updates live beneath them — this
+   is the control that makes BYOK feel safe.
+5. **Appearance.** Light / dark / system as a `SegmentedControl`, applying instantly (RG-012).
+6. **Danger zone.** Delete account requires typing the email, per the arey guide's rule that
+   permanent deletion is confirmed by typing the name. It states exactly what is removed:
+   applications, runs, documents, templates, prompts, keys.
+
+### Reuse from v1
+`app.py render_sidebar` for the settings that exist; `llm/catalog.py` for the model list;
+`config.py` MAX_* values as the defaults shown.
+
+### Tests
+- Save is disabled until the key test passes.
+- No API response in the network log contains the submitted secret.
+- Changing the theme updates `data-theme` immediately and persists after reload.
+- Account deletion requires the exact email and is otherwise disabled.
+
+### Definition of done
+Four tests green.
+
+### Out of scope
+Billing, notification preferences.","screens,web,product","3","2","M3 Product"
+"RG-048 — Landing page and access screens","## Product requirement
+
+**Problem.** The product is invite-only, so most visitors cannot sign in. They still need to
+understand what it is and be able to ask for access.
+
+**Acceptance criteria**
+- A visitor understands in one screen what the product does and why the evidence gate matters.
+- Signing in is one click.
+- An uninvited visitor lands on register-interest, not on an error.
+- The page is fast: no layout shift, no render-blocking third-party script.
+
+## Technical plan
+
+### Files
+```
+apps/web/src/app/page.tsx                        single column, full width
+apps/web/src/components/landing/Hero.tsx
+apps/web/src/components/landing/ProductShot.tsx  static screenshot, cool-neutral, hairline + radius
+apps/web/src/components/landing/ValueProps.tsx   three, no icon-in-tinted-square grid
+apps/web/src/components/landing/HowItWorks.tsx   four numbered steps
+apps/web/src/app/(auth)/no-access/page.tsx       register interest
+```
+
+### Copy direction (arey voice — declarative, no selling)
+Hero: what it does, in one sentence, plus the honest constraint. Something in the register of
+""Tailor a resume to a job description, then score it the way an ATS and a human reviewer would.""
+Sub-line states the position that makes the product different: it will not add a keyword you
+cannot evidence.
+
+Three value props, one line each: tailored generation from a single source of truth; scoring on
+both dimensions; an evidence gate that keeps the resume true. No exclamation marks. No emoji.
+
+How it works: paste the job description → the system drafts and reviews → you resolve missing
+keywords with evidence → export the PDF.
+
+### Steps
+1. Single column, `--content-max`, generous 80px section rhythm. Static — no scroll animation,
+   no parallax.
+2. `ProductShot` is a real screenshot of the result view, desaturated toward the greyscale
+   palette, inset with `--radius-card` and a hairline. Reserve its aspect ratio in CSS so there is
+   no layout shift. Use `next/image` with a blur placeholder.
+3. One primary action, ""Sign in with Google"", repeated at the top and bottom. Nothing else competes.
+4. `/no-access`: one paragraph explaining invite-only, a short form (email, one line about their
+   situation) posting to `POST /public/interest`, and a confirmation that does not promise a date.
+5. Lighthouse: performance and accessibility both ≥ 95.
+
+### Tests
+- Playwright: the sign-in button starts the OAuth flow.
+- Register-interest submits and shows the confirmation state.
+- Lighthouse CI thresholds enforced in the pipeline.
+- No CLS from the product shot (assert the reserved aspect ratio).
+
+### Definition of done
+Four checks green.
+
+### Out of scope
+Marketing site, blog, pricing.","screens,web,product","3","2","M4 Completeness"
+"RG-050 — Run cost accounting","## Product requirement
+
+**Problem.** BYOK means the user pays directly, so the product owes them an honest number. v1
+counts calls but not tokens or money.
+
+**User story.** I see what each run cost me and what I have spent this month.
+
+**Acceptance criteria**
+- Every run shows a cost broken down by stage.
+- A monthly total is visible in settings.
+- The estimate shown before a run and the actual after it are within a stated tolerance.
+
+## Technical plan
+
+### Files
+```
+apps/api/resume_api/llm/pricing.py          per-model input/output prices, dated
+apps/api/resume_api/routers/usage.py        GET /v1/usage?from=&to=
+apps/web/src/components/result/RunCost.tsx
+apps/web/src/components/settings/UsageSection.tsx
+```
+
+### Steps
+1. `pricing.py` is a plain table with an `as_of` date per entry and a test asserting every model
+   in `catalog.py` has a price. A missing price is a hard failure, not a silent zero.
+2. `record_llm_call` (RG-007) already captures usage per call; roll it into `runs.cost_usd` and
+   keep the per-node breakdown in `runs.token_usage`.
+3. `RunCost` renders in the result view: total in mono, expandable to per-stage rows.
+4. `UsageSection` shows a monthly total and a simple per-day bar list — no charting library for
+   this; a list of rows with proportional widths is enough and stays on-brand.
+
+### Tests
+- Every catalogued model has a price.
+- A three-call run totals correctly across two providers.
+- The pre-run estimate is within 25% of actual for a seeded fixture run.
+
+### Definition of done
+Three tests green.
+
+### Out of scope
+Budgets that hard-stop on spend, invoicing.","operations,ops,product","2","2","M4 Completeness"
+"RG-051 — Admin portal: invites and users","## Product requirement
+
+**Problem.** Access is gated by an `allowed_emails` table seeded with SQL. That is fine for the
+first cohort and untenable after it.
+
+**User story.** As the operator I add and revoke invited emails and see who has signed in, from
+a UI rather than the Supabase console.
+
+**Acceptance criteria**
+- Only an admin can reach the portal; everyone else gets a 404, not a 403.
+- I can add emails singly or as a pasted list, and revoke access.
+- Revoking access signs the user out and blocks the next sign-in, but does not delete their data.
+- I can see registered-interest submissions and invite from that list in one action.
+
+## Technical plan
+
+### Files
+```
+supabase/migrations/0016_admin_flag.sql       profiles.is_admin bool default false
+apps/api/resume_api/routers/admin.py          require_admin dependency
+apps/web/src/app/(app)/admin/page.tsx
+apps/web/src/components/admin/{InviteList,InterestList}.tsx
+```
+
+### Routes
+```
+GET    /v1/admin/invites          list with redeemed status
+POST   /v1/admin/invites          { emails[] } — accepts a pasted, newline-separated list
+DELETE /v1/admin/invites/{email}  revoke
+GET    /v1/admin/interest         register-interest submissions
+GET    /v1/admin/users            email, signed-up, last active, run count
+```
+
+### Steps
+1. `require_admin` checks `profiles.is_admin`; the first admin is set by SQL. A non-admin hitting
+   any `/v1/admin/*` route gets 404 — do not confirm the surface exists.
+2. The web route is hidden from the nav entirely for non-admins, and the page itself returns
+   `notFound()`.
+3. Bulk add parses a pasted list, normalises and deduplicates emails, and reports which were
+   already present rather than erroring.
+4. Revoke deletes the `allowed_emails` row and invalidates the user's sessions. Data is retained;
+   the sign-in gate does the work.
+
+### Tests
+- A non-admin gets 404 on every admin route.
+- Bulk add of 20 emails with 3 duplicates reports 17 added, 3 skipped.
+- Revoke blocks the next sign-in and leaves the user's applications intact.
+
+### Definition of done
+Three tests green.
+
+### Out of scope
+Impersonation, per-user quotas.","operations,ops","3","2","M4 Completeness"
+"RG-052 — Move run execution to a queue (conditional)","## Product requirement
+
+**Problem.** `BackgroundTasks` ties a run's execution to the lifetime of one API process. A
+deploy mid-run, or more than a handful of concurrent runs, becomes a real problem.
+
+**Trigger — do not start this ticket until one of these is true:**
+- more than five concurrent runs are observed, or
+- a deploy has interrupted a run in production, or
+- p95 run latency degrades measurably under load.
+
+**Acceptance criteria**
+- A deploy during a run does not lose it.
+- Runs execute at a bounded concurrency with a queue behind them.
+- Nothing about the client's SSE contract changes.
+
+## Technical plan
+
+RG-032 was built to make this a swap, not a redesign: run state already lives in `runs` and
+`run_events`, and the executor is a pure function of a run id.
+
+### Files
+```
+apps/api/resume_api/queue/__init__.py       arq settings + worker entrypoint
+apps/api/resume_api/services/run_service.py change: enqueue instead of add_task
+services/worker/Dockerfile
+```
+
+### Steps
+1. arq + Redis (Upstash is sufficient at this scale). One task: `execute_run(run_id)`.
+2. Concurrency limit of 3 per worker; one worker to start.
+3. Idempotency: `execute_run` claims the run with
+   `update runs set status='running' where id=$1 and status='queued' returning *`. No row returned
+   means another worker has it — return immediately. This is what makes retries safe.
+4. Startup sweep re-enqueues runs stuck in `queued`, and fails runs stuck in `running` past 30
+   minutes with a stale-run message.
+5. Graceful shutdown: finish the current node, checkpoint, requeue the remainder.
+
+### Tests
+- A killed worker mid-run has the run picked up and completed by another.
+- Double-enqueue executes once (the claim test).
+- The SSE contract is unchanged — RG-032's tests pass without modification.
+
+### Definition of done
+Three tests green; RG-032's suite untouched and passing.
+
+### Out of scope
+Multi-region workers, priority queues.","operations,ops,pipeline","3","2","M5 Conditional"
+"RG-053 — Migrate v1 data into v2","## Product requirement
+
+**Problem.** v1 has a real history on disk: applications under `companies/<company>/<role>/` with
+`JD.txt`, `hamsa_resume.tex`, `cover_letter.tex`, `review.json`, `application_status.json`, and
+PDFs — plus a curated `source_of_truth.txt` and ten templates. None of it should be retyped.
+
+**User story.** As the v1 user I run one command and my entire history appears in v2 with its
+scores and statuses intact.
+
+**Acceptance criteria**
+- Every v1 application directory becomes an application with a run carrying its original scores.
+- The source of truth is imported as structured rows, and the rendered output matches the
+  original file.
+- Migration is idempotent — running it twice does not duplicate anything.
+- A dry-run reports exactly what would be created, and changes nothing.
+
+## Technical plan
+
+### Files
+```
+apps/api/scripts/migrate_v1.py         --source <path> --user-email <e> [--dry-run]
+apps/api/scripts/parsers/v1_sot.py     source_of_truth.txt → structured rows
+apps/api/tests/test_migrate_v1.py
+```
+
+### Steps
+1. **Source of truth.** Parse `base/source_of_truth.txt` into companies, projects, bullets, and
+   skills. Then verify by rendering it back with `sot_render` (RG-020) and diffing against the
+   original. Report the diff and abort if it is not empty — a lossy career-record import is worse
+   than no import.
+2. **Templates.** Import `single_page/*.tex` and `multi_page/*.tex` as user-owned rows if they
+   differ from the seeded system versions; skip if identical by hash.
+3. **Applications.** Walk `companies/**`, using `storage.list_saved_applications()`'s own
+   discovery rules — including its fallback globs for oddly-named `.tex` files, which encode real
+   history. For each: create the application from the directory slugs and `JD.txt`; create a run
+   with `status='succeeded'`; map `review.json` field-for-field onto the `runs` columns (the keys
+   already match, per RG-002); upload the `.tex` and PDF files as `documents`; apply
+   `application_status.json` to the application's status fields.
+4. **Idempotency.** Key on `(user_id, company_slug, role_slug, original_dir)`; skip existing. Store
+   `original_dir` in a `migrated_from` column added by this ticket's migration.
+5. `--dry-run` prints a table of what would be created and touches nothing.
+6. Where `review.json` is missing, create the application with no run rather than skipping it —
+   the JD and the `.tex` are still worth having.
+
+### Reuse from v1
+`storage.list_saved_applications`, `read_application_status`, and `default_application_status` —
+port them into the script as the discovery layer. They already handle the messy real-world cases.
+
+### Tests
+- Against a fixture tree of five applications: five applications, five runs, correct scores.
+- A second run of the migration creates nothing new.
+- `--dry-run` writes nothing and reports the right counts.
+- The source-of-truth round-trip diff is empty for the real `source_of_truth.txt`.
+- A directory missing `review.json` still produces an application.
+
+### Definition of done
+Five tests green; the real v1 tree migrates cleanly end to end.
+
+### Out of scope
+Migrating LinkedIn notes or the `ats-checker` cache.","operations,ops,data","3","2","M4 Completeness"
+"RG-054 — Promote to cloud environments","## Product requirement
+
+**Problem.** Everything up to here runs locally. Going to the cloud is where a working project
+quietly acquires a production incident: a leaked service-role key, an unrestricted CORS origin,
+a database with no backups, or a LaTeX container reachable from the internet.
+
+**Outcome.** Two real environments — staging and production — that deploy on merge, hold their
+secrets properly, and can be restored after a mistake.
+
+**Acceptance criteria**
+- Merging to `main` deploys to staging automatically; production is a manual promotion.
+- No secret exists in the repository, in a build log, or in a client bundle.
+- The LaTeX service is reachable only from the API, never from the internet.
+- The database has automated backups and a rehearsed restore.
+- A bad deploy can be rolled back in under five minutes.
+
+## Technical plan
+
+### Topology
+
+| Component | Where | Notes |
+| --- | --- | --- |
+| Web | Vercel | Preview per PR, staging on `main`, production on promotion |
+| API | Fly.io app `rg-api` | Public, behind HTTPS, 2 machines minimum in production |
+| LaTeX | Fly.io app `rg-latex` | **No public IP.** Private 6PN networking only |
+| Worker | Fly.io app `rg-worker` | Only if RG-052 has fired |
+| Postgres + Storage + Auth | Supabase | One project per environment, never shared |
+| Redis | Upstash | Only if RG-052 has fired |
+
+### Files
+```
+.github/workflows/deploy-staging.yml
+.github/workflows/deploy-production.yml     manual dispatch + environment approval
+fly.api.toml  fly.latex.toml  fly.worker.toml
+infra/README.md                             runbook: deploy, rollback, restore, rotate
+infra/checklist-go-live.md
+```
+
+### Steps
+1. **Environments.** `staging` and `production` as GitHub Environments, production requiring a
+   manual approval. Each holds its own secret set. `.env.example` remains the canonical list of
+   names; no environment may define a name absent from it (assert in CI).
+2. **Secret discipline.** The Supabase **service-role key exists only in the API's secret store** —
+   never in Vercel, never in a `NEXT_PUBLIC_` variable, never in a preview environment. Add a CI
+   check that greps the built web bundle for the service-role prefix and for any `sk-` string, and
+   fails the build on a hit.
+3. **Network.** `rg-latex` gets no public IP; the API reaches it over `rg-latex.internal`.
+   API CORS allows exactly the web origins for that environment — no wildcard, in any environment.
+   Supabase RLS is verified against staging by running the RG-002 pgTAP suite post-deploy.
+4. **Migrations.** Applied by the deploy job before the new API version starts, and required to be
+   backward-compatible with the previous release so a rollback does not need a down-migration.
+   Expand-then-contract: add a column in one release, stop reading the old one in the next.
+5. **Backups.** Supabase daily backups plus point-in-time recovery on production. A restore is
+   **rehearsed once into staging** as part of this ticket — an untested backup is not a backup.
+6. **Health and rollback.** `/v1/health` drives Fly's checks; a failing deploy does not take
+   traffic. Rollback is `fly releases rollback` for the API and a Vercel instant rollback for the
+   web, both written into `infra/README.md` with the exact commands.
+7. **Cost and limits.** Set a Fly hard scale cap and a Supabase spend cap. A runaway loop should
+   fail, not bill.
+8. **Go-live checklist** (`infra/checklist-go-live.md`), all items verified before the first
+   production promotion: custom domain and TLS, OAuth redirect URLs for the production origin,
+   `allowed_emails` seeded, Sentry receiving from both apps, backups confirmed, restore rehearsed,
+   secret-scan check green, rate limits on the public interest endpoint, LaTeX container confirmed
+   unreachable from the internet.
+
+### Tests
+- Staging deploy is green end to end, and a smoke test signs in and completes a fake-mode run.
+- The secret-scan CI check fails against a branch that deliberately leaks a key, then is reverted.
+- `rg-latex` is unreachable from a public IP (assert from a runner outside the private network).
+- A staging restore from backup produces the expected row counts.
+- A rollback returns the previous version within five minutes, timed and recorded in the runbook.
+
+### Definition of done
+Five checks recorded in `infra/README.md` with dates; the go-live checklist fully ticked.
+
+### Out of scope
+Multi-region, autoscaling policy, SOC2-style compliance work.","operations,ops,infra","5","2","M4 Completeness"
