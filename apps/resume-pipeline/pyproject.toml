@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "resume-pipeline"
+version = "0.1.0"
+description = "Resume generation pipeline for Ascend. Ports Resume/resume_generator v1."
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "httpx>=0.27",
+    "beautifulsoup4>=4.12",
+    "asyncpg>=0.30",
+    "structlog>=24.4",
+    "tenacity>=9.0",
+    "anthropic>=0.40",
+    "openai>=1.55",
+    "langgraph>=0.2.60",
+    "langgraph-checkpoint-postgres>=2.0",
+    "cryptography>=43.0",
+    "pypdf>=5.1",
+    "python-multipart>=0.0.12",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.7",
+    "mypy>=1.13",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["resume_pipeline"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+# Vendored upstream code and copies of v1's suite kept as reference fixtures. Both
+# are re-copied from their source rather than edited here, so linting them would
+# only ever produce violations nobody is allowed to fix.
+extend-exclude = ["resume_pipeline/ats", "tests/ats", "tests/fixtures/v1"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+# The vendored ATS package is upstream code; it is re-copied, never edited here.
+exclude = ["resume_pipeline/ats/*"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+# Vendored upstream code and the LangGraph port keep v1's looser typing.
+[[tool.mypy.overrides]]
+module = ["resume_pipeline.ats.*", "resume_pipeline.pipeline.graph"]
+ignore_errors = true

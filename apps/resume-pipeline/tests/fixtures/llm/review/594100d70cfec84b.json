@@ -1,0 +1,25 @@
+{
+  "marker": "FIXTURE-MARKER-REVIEW-7a2e05",
+  "resume": {
+    "category_scores": {
+      "jd_skills_keyword_match": 8.0,
+      "role_domain_relevance": 8.0,
+      "achievement_evidence_strength": 8.0,
+      "credibility_source_truth_compliance": 8.0,
+      "single_page_compliance": 8.0,
+      "targeting_brief_compliance": 8.0,
+      "ats_latex_formatting_safety": 8.0,
+      "recruiter_impression_seniority_alignment": 8.0
+    },
+    "verdict": "pass",
+    "brutal_recruiter_opinion": "Reads as a credible senior backend engineer.",
+    "must_fix": [],
+    "nice_to_have": [
+      "Tighten the summary to two lines."
+    ],
+    "ats_risks": [],
+    "missing_keywords": [],
+    "credibility_risks": [],
+    "fix_resolution": []
+  }
+}

@@ -1,0 +1,72 @@
+# Local development stack for the Ascend resume generator.
+#
+# Nothing here is reachable from outside this machine: every port binds to
+# 127.0.0.1 explicitly. The LaTeX service in particular compiles untrusted
+# user input and must never be internet-reachable (RG-035, RG-054).
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: ascend-rg-postgres
+    environment:
+      POSTGRES_USER: ascend
+      POSTGRES_PASSWORD: ascend
+      POSTGRES_DB: ascend
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - ascend-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ascend -d ascend"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  # The compiler sits on an internal network with no route off the machine, so a
+  # malicious .tex cannot exfiltrate or reach a URL even if it gets past Tectonic's
+  # --untrusted mode. An internal network also refuses published ports, so the host
+  # reaches it through the forwarder below — which is the same shape as production,
+  # where only the API can see the compiler.
+  latex:
+    build:
+      context: ./apps/resume-latex
+    container_name: ascend-rg-latex
+    networks: [compile-isolated]
+    # Untrusted LaTeX runs in here. Everything below is the sandbox.
+    read_only: true
+    user: "10001:10001"
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=128m
+    mem_limit: 512m
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Bridges the isolated compile network to the host so a pipeline running outside
+  # Docker can reach it in development. It forwards bytes and nothing else: it runs
+  # no untrusted input, so its own egress is not a risk. In production the API
+  # container takes this role and this service goes away.
+  latex-gateway:
+    image: alpine/socat:1.8.0.0
+    container_name: ascend-rg-latex-gateway
+    command: ["-d", "TCP-LISTEN:8080,fork,reuseaddr", "TCP:latex:8080"]
+    ports:
+      - "127.0.0.1:58080:8080"
+    networks: [compile-isolated, default]
+    depends_on:
+      latex:
+        condition: service_healthy
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+
+networks:
+  compile-isolated:
+    internal: true
+
+volumes:
+  ascend-pgdata:

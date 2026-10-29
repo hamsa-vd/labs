@@ -1,0 +1,115 @@
+\documentclass[10pt]{article}
+
+\usepackage[a4paper,margin=0.5in]{geometry}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage[T1]{fontenc}
+\usepackage{charter}
+\usepackage[utf8]{inputenc}
+
+\definecolor{sectioncolor}{RGB}{0,102,102}
+
+\titleformat{\section}
+  {\normalsize\bfseries\color{sectioncolor}}
+  {}
+  {0em}
+  {}
+  [\titlerule]
+
+\titlespacing*{\section}{0pt}{6pt}{4pt}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\setlist[itemize]{leftmargin=1.4em,labelsep=0.5em,noitemsep,topsep=2pt,parsep=0pt}
+
+\newcommand{\resumeHeader}[2]{%
+  \noindent\makebox[\textwidth][l]{%
+    \parbox[t]{0.78\textwidth}{\textbf{#1}}%
+    \hfill
+    #2%
+  }%
+}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{HAMSA VARDHAN}}\\[2pt]
+London, UK \;|\; +44 07767930695 \;|\;
+\href{mailto:hamsavardhan99@gmail.com}{hamsavardhan99@gmail.com} \;|\;
+\href{https://linkedin.com/in/hamsa-vardhan}{\underline{LinkedIn}} \;|\;
+\href{https://github.com/hamsa-vd}{\underline{GitHub}} \;|\;
+\href{https://calendly.com/hamsa-vd/intro-call}{\underline{Calendly}}
+\end{center}
+
+\vspace{-2pt}
+
+%------------------------
+\section*{PROFESSIONAL SUMMARY}
+
+Backend-leaning Full-Stack Software Engineer with 5+ years delivering secure, cloud-native products across product and consulting environments. Strongest in backend ownership, authentication systems, and scalable integrations, with hands-on depth across React, Java (Spring), Python, and AWS.
+\begin{itemize}
+  \item Built end-to-end systems across lean product teams and 12-engineer enterprise deliveries, spanning UI, BFF, API, observability, and AWS infrastructure layers.
+  \item Authentication and authorization specialist with hands-on experience in JWT, OAuth2/OIDC, RBAC, Auth0, Keycloak, and Okta.
+  \item Experienced in microservices, event-driven architecture, GraphQL integrations, and AI-enabled automation; mentored 3 junior/intern engineers while partnering with product, QA, security, and analysts.
+\end{itemize}
+
+%------------------------
+\section*{TECHNICAL SKILL SET}
+
+\textbf{Frontend:} React.js, Redux, Angular, TypeScript, JavaScript \quad
+\textbf{Backend:} Java (Spring Boot), Python (Django, FastAPI), Node.js, REST APIs, Microservices\\
+\textbf{Cloud \& DevOps:} AWS (EC2, Lambda, ECS, EKS, CloudFront, S3), Docker, Kubernetes, Jenkins CI/CD \quad
+\textbf{Databases:} PostgreSQL, MySQL, MongoDB, Redis\\
+\textbf{Messaging:} Apache Kafka, RabbitMQ \quad
+\textbf{Observability:} Prometheus, Grafana \quad
+\textbf{AI:} LangChain, RAG pipelines, Embedding-based retrieval
+
+%------------------------
+\section*{WORK EXPERIENCE}
+
+\resumeHeader{Software Engineer}{Aug 2022 -- Present}\\
+\textit{Liv-Ex, London, UK}
+\noindent
+\begin{itemize}
+  \item Led full-stack feature delivery across 12 Agile sprints, reducing delivery timelines by 20\% through end-to-end ownership from UI to backend APIs and cloud deployment.
+  \item Migrated search infrastructure from Lucene to AWS OpenSearch, cutting search latency from \raise.17ex\hbox{$\scriptstyle\sim$}3s to \raise.17ex\hbox{$\scriptstyle\sim$}300ms while expanding queryable properties by 6x.
+  \item Architected Keycloak-based SSO replacing Auth0, and migrated API key/secret auth to JWT-based validation across Spring Gateway and auth microservices.
+  \item Introduced Prometheus and Grafana observability stack, eliminating manual log debugging and enabling proactive alerting across Dockerized services.
+  \item Reduced frontend bundle size from 13.1MB to 8MB by migrating Webpack to Vite and upgrading Node 14 to Node 20 LTS.
+  \item Optimized AWS CloudFront with WAF rules and caching strategies, achieving 40\% faster content distribution and hardened security posture.
+  \item Drove next-gen architecture decisions with senior architects -- React/Vite frontend, Kafka event-driven backend, EKS orchestration.
+  \item Built Django and FastAPI services for internal tooling and AI-driven workflows; delivered automation reducing business processes from days to hours.
+\end{itemize}
+
+\vspace{4pt}
+
+\resumeHeader{Junior Software Engineer}{Jan 2021 -- Jul 2022}\\
+\textit{Presidio, Chennai, India}
+\noindent
+\begin{itemize}
+  \item Delivered full-stack features combining Angular/React frontends with Java Spring Boot and Python backend APIs across enterprise healthcare and AWS marketplace projects.
+  \item Engineered AWS Lambda-based serverless services and SNS alerting pipelines, reducing infrastructure costs by 10\% and improving system reliability.
+  \item Resolved PostgreSQL race conditions and deadlock issues in production, strengthening database performance across high-traffic healthcare modules.
+  \item Completed a 3-month ServiceNow AWS Marketplace integration in 2 weeks; recognized with Best Employee Award.
+\end{itemize}
+
+%------------------------
+\section*{PROFESSIONAL DEVELOPMENT}
+
+\resumeHeader{New Age Software Engineering Program}{Nov 2025 -- May 2026}\\
+Masai School in collaboration with IIT Roorkee
+\noindent
+\begin{itemize}
+    \item Applying AI-focused software engineering techniques including distributed system design with LLM-backed components and cloud-native orchestration.
+    \item Expanding practical knowledge of AI integration, software architecture decision-making, and modern engineering workflows through ongoing coursework and hands-on application.
+\end{itemize}
+
+%------------------------
+\section*{EDUCATION}
+
+\resumeHeader{B.Tech in Electronics and Communication Engineering (ECE)}{2020}\\
+SRM University, Chennai, India
+
+\end{document}

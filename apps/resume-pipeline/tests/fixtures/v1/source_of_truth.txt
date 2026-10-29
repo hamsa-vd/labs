@@ -1,0 +1,271 @@
+==============================
+CANDIDATE MASTER SOURCE DOC
+==============================
+
+[PERSONAL INFORMATION]
+Name: Hamsa Vardhan Darapureddi
+Email: hamsavardhan99@gmail.com
+LinkedIn: https://www.linkedin.com/in/hamsa-vardhan/
+Github: https://github.com/hamsa-vd
+Calendly: https://calendly.com/hamsa-vd/intro-call
+Location: London, UK
+Visa: Sponsorship required until end of July 2027
+
+----------------------------------------
+[PROFESSIONAL SUMMARY SIGNALS]
+----------------------------------------
+- Full Stack Software Engineer (Backend-leaning in recent roles)
+- 5+ years experience
+- Strong backend ownership (Java, Python, Node)
+- Strong frontend foundation (React, Angular)
+- Cloud-native engineering (AWS-heavy)
+- Microservices + distributed systems
+- Authentication & Authorization SME (JWT, OAuth, RBAC, Keycloak, Okta)
+- Observability & monitoring (Prometheus, Grafana)
+- DevOps exposure (Docker, Kubernetes, Terraform, CI/CD)
+- AI-integrated systems (LangChain, LLM workflows)
+- Strong product thinking + stakeholder interaction
+- Mentoring experience
+
+----------------------------------------
+[CORE TECH STACK]
+----------------------------------------
+
+Languages:
+- Java
+- Python
+- TypeScript / JavaScript
+
+Frontend:
+- React, Next.js, Gatsby
+- Angular
+- Svelte
+- Redux, Zustand, React Query
+- Vite, Webpack
+- Storybook
+
+Backend:
+- Spring Boot, Spring MVC, Spring Gateway
+- Node.js (Express, Fastify)
+- Python (Django, Flask, FastAPI)
+- Microservices architecture
+- REST APIs
+- BFF (Backend for Frontend)
+- GraphQL (BFF integration)
+
+Authentication / Security:
+- JWT
+- OAuth2 / OIDC
+- RBAC
+- Auth0
+- Keycloak
+- Okta
+- API key rotation systems
+- Security headers, WAF
+
+Cloud / DevOps:
+- AWS (EC2, S3, RDS, Lambda, API Gateway, CloudFront, ECS, EKS, SNS)
+- Docker
+- Kubernetes
+- Terraform (IaC)
+- Jenkins (CI/CD)
+- CloudFormation
+- ASG
+
+Databases:
+- PostgreSQL
+- MySQL
+- MongoDB
+- Cassandra
+- DynamoDB
+- Redis (extensive production use — caching, session management, hot read paths)
+- Memcached (tried it; familiar with concepts — Redis is primary caching tool, same underlying principles apply)
+
+Messaging / Streaming:
+- Kafka
+- RabbitMQ
+- Amazon MQ
+
+Observability:
+- Prometheus
+- Grafana
+- Logging pipelines (S3 + scripts → improved to monitoring stack)
+
+Search:
+- Lucene
+- AWS OpenSearch
+
+AI / LLM:
+- LangChain
+- OpenAI integrations
+- RAG pipelines
+- Embeddings
+- AI agents (CrewAI, Groq)
+
+----------------------------------------
+[EXPERIENCE TIMELINE]
+----------------------------------------
+
+--------------------------------------------------
+COMPANY: Liv-ex (London, UK)
+ROLE: Software Engineer
+DURATION: Aug 2022 – Present
+TYPE: Product-based company
+--------------------------------------------------
+
+[OWNERSHIP & IMPACT]
+- Sole frontend engineer initially → owned entire UI layer
+- Transitioned into backend-heavy ownership over time
+- Became go-to engineer for backend + infrastructure issues
+- Contributed to next-gen architecture decisions
+
+[FRONTEND IMPACT]
+- Migrated Node 14 → Node 20 (LTS)
+- Migrated Webpack → Vite
+- Reduced bundle size from 13.1MB → ~8MB
+- Improved application performance and dev velocity
+- Built complex data-heavy UI (List Studio)
+
+[BACKEND & SYSTEM DESIGN]
+- Built multiple production-grade APIs (internal + external)
+- Designed Fastify-based BFF layer
+- Contributed to Spring Boot microservices ecosystem
+- Worked on distributed architecture evolution (towards event-driven with Kafka)
+
+[AUTHENTICATION & SECURITY]
+- Migrated auth system:
+  - API Key/Secret → JWT-based auth (Auth0)
+- Modified backend auth microservice to support JWT validation
+- Implemented Keycloak-based authentication + SSO
+- Added WAF + security headers on CloudFront
+- Built automated key rotation systems
+
+[OBSERVABILITY]
+- Introduced Prometheus + Grafana
+- Eliminated manual log debugging workflows
+- Enabled alerting + monitoring pipelines
+- Trained QA team on log analysis
+
+[SEARCH & PERFORMANCE]
+- Migrated Lucene → AWS OpenSearch
+- Reduced search latency:
+  - ~2-3 seconds → ~200-300ms
+- Expanded search capabilities significantly
+
+[DEVOPS & INFRA]
+- Built and deployed Docker containers
+- Managed AWS services
+- Worked with ECS, EC2, Lambda
+- Created automation tools for infra + monitoring
+
+[AI & INTERNAL TOOLS]
+- Built Django-based internal tools
+- Built FastAPI services for AI workflows
+- Built LangChain-based systems
+- Built LLM-powered automation tools
+
+[PRODUCT & BUSINESS IMPACT]
+- Worked closely with product managers, analysts, stakeholders
+- Delivered automation reducing business workflows from days → hours
+- Built Contentful BFF + OpenSearch-based article search
+- Contributed to architecture decisions for next-gen system
+
+[MENTORSHIP]
+- Mentored junior frontend engineer
+- Mentored interns
+- Conducted knowledge sessions
+
+[ARCHITECTURE & NEXT GEN]
+- Designed next-gen stack:
+  - React + Vite
+  - Kafka (event-driven)
+  - EKS
+  - Keycloak
+- Participated with architects in system design decisions
+
+[ACHIEVEMENTS]
+- Hackathon winner (self-healing scraper using AI agents)
+- Delivered production systems significantly faster using AI
+
+--------------------------------------------------
+COMPANY: Presidio (Chennai, India)
+ROLE: Software Engineer
+DURATION: Jan 2021 – Jul 2022
+TYPE: AWS Partner / Service Company
+--------------------------------------------------
+
+[TRAINING]
+- Java, Spring Boot, Microservices
+- AWS ecosystem
+- Big Data basics (Hadoop, Spark, Scala)
+
+[PROJECT 1: Full Stack Capstone]
+- Java + React + AWS
+- Designed authentication using Okta (JWT, OIDC)
+- Worked in 12-member team
+
+[PROJECT 2: Eaton POC]
+- Built telephony system backend (Node.js)
+- Integrated:
+  - AWS Connect
+  - Google Speech APIs
+  - AWS Lex chatbot
+
+[PROJECT 3: ServiceNow AWS Marketplace]
+- Built frontend (Angular + jQuery)
+- Completed 3-month project in 2 weeks
+- Won Best Employee Award
+
+[PROJECT 4: Greenway Healthcare]
+- Large-scale healthcare system
+- Worked across frontend + backend
+- Built alerting system using AWS SNS + Lambda
+- Solved PostgreSQL race conditions + deadlocks
+- Worked with:
+  - Java
+  - .NET Core
+  - Python
+- Exposure to:
+  - DevOps team
+  - QA team
+  - Security team
+
+[ACHIEVEMENTS]
+- Won 2 internal hackathons
+- Strong exposure to enterprise-scale systems
+
+----------------------------------------
+[PROJECTS & SIDE WORK]
+----------------------------------------
+
+- AI Question Bank (LangChain + RAG)
+- Startup architecture consulting
+- Desktop app (Python Tkinter)
+- Freelancing (Svelte)
+- AI scraping system (CrewAI)
+
+----------------------------------------
+[EDUCATION]
+----------------------------------------
+
+B.Tech – Electronics and Communication Engineering  
+SRM University (2016–2020)
+
+----------------------------------------
+[CERTIFICATIONS]
+----------------------------------------
+
+- Red Hat Certified Engineer (RHCE)
+- Ongoing Advanced Software Engineering (Masai + IIT Roorkie)
+
+----------------------------------------
+[STRENGTH SIGNALS]
+----------------------------------------
+
+- Strong backend evolution (frontend → backend → architecture)
+- High ownership and initiative
+- Performance optimization mindset
+- Security-first engineering
+- Strong learning velocity
+- Product + business understanding
+- Mentorship capability

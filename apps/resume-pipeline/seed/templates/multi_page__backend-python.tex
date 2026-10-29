@@ -1,0 +1,121 @@
+
+
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\definecolor{sectioncolor}{RGB}{0,102,102}
+
+\titleformat{\section}
+  {\large\bfseries\color{sectioncolor}}
+  {}
+  {0em}
+  {}
+  [\titlerule]
+
+\setlength{\parindent}{0pt}
+\setlist[itemize]{leftmargin=1.6em,labelsep=0.6em,noitemsep,topsep=4pt}
+
+\newcommand{\resumeHeader}[2]{%
+  \noindent\makebox[\textwidth][l]{%
+    \parbox[t]{0.78\textwidth}{\textbf{#1}}%
+    \hfill
+    #2%
+  }%
+}
+
+\begin{document}
+
+\begin{center}
+{\LARGE \textbf{HAMSA VARDHAN}}\\
+London, UK \;|\; +44 07767930695 \;|\;
+\href{mailto:hamsavardhan99@gmail.com}{hamsavardhan99@gmail.com} \;|\; \href{https://calendly.com/hamsa-vd/intro-call}{\underline{Calendly}} \\
+{\small Requires visa sponsorship until End of 2027}
+\end{center}
+
+%------------------------
+\section*{PROFESSIONAL SUMMARY}
+
+Backend Engineer specialising in Python-based systems with 5+ years of experience building scalable APIs, AI-integrated backend workflows, and cloud-native microservices. Strong expertise in Django for enterprise API systems and FastAPI for lightweight, high-performance services supporting AI-driven use cases.
+
+\begin{itemize}
+    \item Delivered backend systems improving response performance by \textbf{25\%} through API and database optimisation.
+    \item Engineered AI-enabled services leveraging FastAPI to support retrieval and LLM-powered workflows.
+    \item Reduced infrastructure costs by \textbf{10\%} using serverless and cloud-native backend architectures.
+\end{itemize}
+
+%------------------------
+\section*{TECHNICAL SKILL SET}
+
+\textbf{Backend (Primary):} Python, Django, FastAPI, REST API Design, Data Modeling, Microservices.\\
+\textbf{AI Integration:} LangChain, RAG pipelines, Embedding-based retrieval.\\
+\textbf{Cloud \& DevOps:} AWS (EC2, Lambda, ECS, CloudFront), Docker, Kubernetes.\\
+\textbf{Databases:} PostgreSQL, MySQL, MongoDB, Cassandra.\\
+\textbf{Frontend (Supporting):} React.js, Redux.\\
+\textbf{Messaging:} Apache Kafka, ActiveMQ.
+
+%------------------------
+\section*{WORK EXPERIENCE}
+
+\resumeHeader{Software Engineer}{Aug 2022 -- Present}\\
+\textit{Liv-Ex, London, UK}
+\noindent
+\begin{itemize}
+  \item Engineered and maintained Python-based REST APIs supporting high-traffic internal and external systems across distributed services.
+  \item Architected FastAPI microservices powering AI-driven workflows, eliminating multi-day manual processes for finance and logistics teams.
+  \item Optimised API response handling and database queries, improving backend performance by \textbf{25\%}.
+  \item Deployed containerised backend services using Docker on AWS ECS, enabling scalable and fault-tolerant service execution.
+  \item Migrated search infrastructure to AWS OpenSearch, reducing query latency from \textbf{2--3 seconds to under 300ms}.
+  \item Strengthened API security by enabling JWT-based authentication and improving token validation workflows.
+  \item Improved content delivery performance by \textbf{40\%} through backend-aware caching strategies and AWS CloudFront optimisation.
+  \item Mentored junior engineers and guided backend best practices, improving team productivity and code quality.
+\end{itemize}
+
+\vspace{12pt}
+
+\resumeHeader{Junior Software Engineer}{Jan 2021 -- Jul 2022}\\
+\textit{Presidio, Chennai, India}
+\noindent
+\begin{itemize}
+  \item Delivered backend APIs using Python and Java-based services, enabling seamless frontend integration across enterprise applications.
+  \item Reduced application load times by \textbf{25\%} through backend optimisation and efficient query handling.
+  \item Provisioned AWS Lambda services, decreasing infrastructure costs by \textbf{10\%}.
+  \item Improved application reliability, lowering defect rates by \textbf{20\%} through structured validation and testing strategies.
+  \item Coordinated API integrations with frontend teams, reducing data inconsistencies and integration issues.
+\end{itemize}
+
+%------------------------
+\section*{PROJECT EXPERIENCE}
+
+\textbf{AI Question Bank Generator (RAG Pipeline)}
+\begin{itemize}
+    \item Designed Python-based backend system using LangChain and PostgreSQL vector storage for scalable semantic retrieval.
+    \item Engineered retrieval pipelines integrating LLM outputs into application workflows, enabling context-aware generation.
+    \item Structured asynchronous processing pipelines to support scalable AI workloads across document embeddings.
+\end{itemize}
+
+%------------------------
+\section*{PROFESSIONAL DEVELOPMENT}
+
+\resumeHeader{New Age Software Engineering Program (Ongoing)}{Nov 2025 -- May 2026}\\
+Masai School in collaboration with IIT Roorkee
+\noindent
+\begin{itemize}
+    \item Applying AI-focused backend engineering practices including token lifecycle management and structured prompt workflows.
+    \item Designing distributed backend systems integrating LLM-backed components into scalable architectures.
+    \item Advancing cloud-native backend design and service orchestration expertise.
+\end{itemize}
+
+%------------------------
+\section*{EDUCATION}
+
+\resumeHeader{B.Tech in ECE}{2020}\\
+SRM University, Chennai, India
+
+\end{document}

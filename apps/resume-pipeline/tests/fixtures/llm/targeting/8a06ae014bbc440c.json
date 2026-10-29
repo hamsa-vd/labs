@@ -1,0 +1,42 @@
+{
+  "marker": "FIXTURE-MARKER-TARGETING-b41c9d",
+  "role_level": "senior",
+  "role_level_rationale": "The job description asks for five or more years of backend work.",
+  "tone": "ownership-heavy",
+  "positioning_statement": "Position the candidate as a settlement-platform owner.",
+  "grounded_keywords": [
+    "Python",
+    "Kafka",
+    "PostgreSQL",
+    "AWS"
+  ],
+  "learning_signal_keywords": [
+    "Terraform"
+  ],
+  "forbidden_claims": [
+    "Rust"
+  ],
+  "seniority_verbs_to_avoid": [
+    "single-handedly"
+  ],
+  "seniority_verbs_to_use": [
+    "architected",
+    "led"
+  ],
+  "evidence_map": [
+    {
+      "jd_requirement": "Event-driven pipelines with Kafka",
+      "candidate_evidence": "Architected a Kafka event pipeline across twelve services.",
+      "strategy": "Lead the experience section with it."
+    }
+  ],
+  "keyword_strategy": [
+    {
+      "keyword": "Kafka",
+      "has_evidence": true,
+      "approach": "use confidently"
+    }
+  ],
+  "ats_strategy": "Lead with Python, Kafka and AWS in the skills line.",
+  "cover_letter_angle": "Settlement latency as the thread through both roles."
+}

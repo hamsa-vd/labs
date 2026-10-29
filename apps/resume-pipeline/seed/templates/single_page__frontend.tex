@@ -1,0 +1,115 @@
+\documentclass[10pt]{article}
+
+\usepackage[a4paper,margin=0.5in]{geometry}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage[T1]{fontenc}
+\usepackage{charter}
+\usepackage[utf8]{inputenc}
+
+\definecolor{sectioncolor}{RGB}{0,102,102}
+
+\titleformat{\section}
+  {\normalsize\bfseries\color{sectioncolor}}
+  {}
+  {0em}
+  {}
+  [\titlerule]
+
+\titlespacing*{\section}{0pt}{6pt}{4pt}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\setlist[itemize]{leftmargin=1.4em,labelsep=0.5em,noitemsep,topsep=2pt,parsep=0pt}
+
+\newcommand{\resumeHeader}[2]{%
+  \noindent\makebox[\textwidth][l]{%
+    \parbox[t]{0.78\textwidth}{\textbf{#1}}%
+    \hfill
+    #2%
+  }%
+}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{HAMSA VARDHAN}}\\[2pt]
+London, UK \;|\; +44 07767930695 \;|\;
+\href{mailto:hamsavardhan99@gmail.com}{hamsavardhan99@gmail.com} \;|\;
+\href{https://linkedin.com/in/hamsa-vardhan}{\underline{LinkedIn}} \;|\;
+\href{https://github.com/hamsa-vd}{\underline{GitHub}} \;|\;
+\href{https://calendly.com/hamsa-vd/intro-call}{\underline{Calendly}}
+\end{center}
+
+\vspace{-2pt}
+
+%------------------------
+\section*{PROFESSIONAL SUMMARY}
+
+Frontend Software Engineer with 5+ years building high-performance web applications across product and consulting environments. Strongest in React and Angular delivery, data-heavy UI architecture, performance optimization, and reliable integration with backend platforms.
+\begin{itemize}
+  \item Owned frontend delivery across lean product teams and 12-engineer enterprise programs, spanning implementation, performance tuning, and release hardening.
+  \item Improved user experience through bundle reduction, build-tool modernization, caching, and state-driven application architecture.
+  \item Comfortable partnering across product, UX, backend, and QA, with supporting depth in Java/Spring, Node.js, GraphQL, and AWS-backed integrations.
+\end{itemize}
+
+%------------------------
+\section*{TECHNICAL SKILL SET}
+
+\textbf{Frontend:} React, Angular, TypeScript, JavaScript, Next.js, Gatsby, Svelte\\
+\textbf{UI Architecture:} Redux, React Query, Zustand, Vite, Webpack, Storybook\\
+\textbf{Backend Support:} Java (Spring), Node.js, REST APIs, GraphQL\\
+\textbf{Cloud \& DevOps:} AWS, CloudFront, Docker \quad
+\textbf{Databases:} PostgreSQL, MySQL, MongoDB
+
+%------------------------
+\section*{WORK EXPERIENCE}
+
+\resumeHeader{Software Engineer}{Aug 2022 -- Present}\\
+\textit{Liv-Ex, London, UK}
+\noindent
+\begin{itemize}
+  \item Served as the sole in-house frontend engineer initially, owning UI delivery across React product areas and complex data-heavy workflows.
+  \item Worked directly with product managers, business analysts, UX, and executive stakeholders to refine requirements, run demos, and translate complex workflows into usable interfaces.
+  \item Reduced frontend bundle size from 13.1MB to 8MB by migrating Webpack to Vite and upgrading Node 14 to Node 20 LTS.
+  \item Built and maintained modular React UI patterns for complex workflows including List Studio, improving maintainability and delivery speed.
+  \item Added CloudFront WAF rules and security headers to harden the statically hosted frontend against common web attacks including SQL injection and XSS.
+  \item Partnered closely with backend engineers on API contracts and BFF integrations to support reliable data-heavy user experiences.
+  \item Evaluated charts, tables, design-system, and state-management options through POCs, helping shape next-gen frontend decisions across React, Vite, Storybook, React Query, and Zustand.
+  \item Mentored a junior frontend engineer and interns through hands-on guidance and technical knowledge-sharing sessions.
+\end{itemize}
+
+\vspace{4pt}
+
+\resumeHeader{Junior Software Engineer}{Jan 2021 -- Jul 2022}\\
+\textit{Presidio, Chennai, India}
+\noindent
+\begin{itemize}
+  \item Designed the initial UI approach for a 12-member Java/React/AWS capstone project before moving into frontend implementation.
+  \item Delivered enterprise frontend features across Angular and jQuery applications for AWS marketplace and healthcare workflows.
+  \item Completed a 3-month ServiceNow AWS Marketplace project in 2 weeks and received the Best Employee Award.
+  \item Improved application load times through frontend profiling, optimization, and tighter integration with backend services.
+  \item Integrated frontend applications with backend REST APIs and AWS Lambda/SNS-powered workflows in enterprise environments.
+\end{itemize}
+
+%------------------------
+\section*{PROFESSIONAL DEVELOPMENT}
+
+\resumeHeader{New Age Software Engineering Program}{Nov 2025 -- May 2026}\\
+Masai School in collaboration with IIT Roorkee
+\noindent
+\begin{itemize}
+    \item Applying AI-focused software engineering techniques including distributed system design with LLM-backed components and cloud-native orchestration.
+    \item Expanding practical knowledge of AI integration, software architecture decision-making, and modern engineering workflows through ongoing coursework and hands-on application.
+    \item Studying how modern frontend and full-stack delivery can incorporate AI capabilities without sacrificing maintainability, performance, or production readiness.
+\end{itemize}
+
+%------------------------
+\section*{EDUCATION}
+
+\resumeHeader{B.Tech in Electronics and Communication Engineering (ECE)}{2020}\\
+SRM University, Chennai, India
+
+\end{document}

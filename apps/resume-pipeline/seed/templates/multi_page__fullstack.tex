@@ -1,0 +1,121 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\definecolor{sectioncolor}{RGB}{0,102,102}
+
+\titleformat{\section}
+  {\large\bfseries\color{sectioncolor}}
+  {}
+  {0em}
+  {}
+  [\titlerule]
+
+\setlength{\parindent}{0pt}
+\setlist[itemize]{leftmargin=1.6em,labelsep=0.6em,noitemsep,topsep=4pt}
+
+\newcommand{\resumeHeader}[2]{%
+  \noindent\makebox[\textwidth][l]{%
+    \parbox[t]{0.78\textwidth}{\textbf{#1}}%
+    \hfill
+    #2%
+  }%
+}
+
+\begin{document}
+
+\begin{center}
+{\LARGE \textbf{HAMSA VARDHAN}}\\
+London, UK \;|\; +44 07767930695 \;|\;
+\href{mailto:hamsavardhan99@gmail.com}{hamsavardhan99@gmail.com} \;|\; \href{https://calendly.com/hamsa-vd/intro-call}{\underline{Calendly}} \\
+{\small Requires visa sponsorship until End of 2027}
+\end{center}
+
+%------------------------
+\section*{PROFESSIONAL SUMMARY}
+
+Full-Stack Software Engineer with 5+ years of experience delivering end-to-end web applications across React, Angular, Java (Spring), Python (Django/FastAPI), Docker, and AWS environments. Experienced in designing scalable frontend architectures, building robust backend APIs, deploying containerised microservices, and integrating AI-enabled workflows into production systems.
+
+\begin{itemize}
+    \item Delivered complete feature lifecycles from UI implementation to backend API design and cloud deployment.
+    \item Architected microservices-based systems supporting scalable, distributed application environments.
+    \item Integrated AI-powered backend workflows using retrieval-based architectures and LLM-driven services.
+\end{itemize}
+
+%------------------------
+\section*{TECHNICAL SKILL SET}
+
+\textbf{Frontend:} React.js, Redux, Angular, TypeScript, JavaScript.\\
+\textbf{Backend:} Java (Spring), Python (Django, FastAPI), REST APIs, Microservices.\\
+\textbf{Cloud \& DevOps:} AWS (EC2, Lambda, ECS, CloudFront), Docker, Kubernetes.\\
+\textbf{Databases:} PostgreSQL, MySQL, MongoDB, Cassandra.\\
+\textbf{Messaging:} Apache Kafka, ActiveMQ.\\
+\textbf{AI Integration:} LangChain, RAG pipelines, Embedding-based retrieval.
+
+%------------------------
+\section*{WORK EXPERIENCE}
+
+\resumeHeader{Software Engineer}{Aug 2022 -- Present}\\
+\textit{Liv-Ex, London, UK}
+\noindent
+\begin{itemize}
+  \item Led full-stack feature delivery across \textbf{12} Agile sprints, cutting delivery timelines by \textbf{20\%}.
+  \item Architected modular React-based frontend components, slashing bundle size from \textbf{13.1MB to 8MB} (39\% reduction) and accelerating development build speeds.
+  \item Engineered and maintained REST APIs in Java and Python supporting internal operations and external integrations across distributed services.
+  \item Launched FastAPI microservices for lightweight internal tooling and AI-driven workflows, eliminating multi-day manual processes for finance and logistics teams.
+  \item Deployed Dockerized backend services on AWS ECS with CloudFormation, enabling independent scaling across service boundaries.
+  \item Migrated Lucene-based search to AWS OpenSearch, reducing query latency from \textbf{2--3 seconds to under 300ms} across \textbf{6+} indexed wine properties.
+  \item Optimised AWS CloudFront configuration and caching strategies, achieving \textbf{40\%} faster content delivery while hardening WAF rules against SQL injection and XSS attacks.
+  \item Elevated authentication security by transitioning from API key access to Auth0 JWT tokens, later migrating to self-hosted Keycloak SSO for greater control and cost reduction.
+  \item Mentored \textbf{3 engineers} (1 junior developer, 2 IT analyst interns) through regular code reviews, pair programming, and technical knowledge-sharing sessions.
+  \item Guided architectural planning for next-generation platform with a cross-functional team of \textbf{12 engineers} and \textbf{2 architects}, influencing stack selection and service design decisions.
+\end{itemize}
+
+\vspace{12pt}
+
+\resumeHeader{Junior Software Engineer}{Jan 2021 -- Jul 2022}\\
+\textit{Presidio, Chennai, India}
+\noindent
+\begin{itemize}
+  \item Crafted full-stack features spanning Angular/Vue frontends and Java Spring backend REST APIs, routinely delivering ahead of sprint estimates.
+  \item Slashed page load times by \textbf{25\%} through coordinated frontend optimisation and backend query tuning.
+  \item Provisioned AWS Lambda-based backend services, trimming infrastructure costs by \textbf{10\%}.
+  \item Strengthened application reliability, reducing defect rates by \textbf{20\%} through structured testing and peer review processes.
+  \item Coordinated frontend build releases with backend service deployments, streamlining CI/CD delivery and winning the \textbf{Best Employee Award} for delivering a 3-month project in \textbf{2 weeks}.
+\end{itemize}
+
+%------------------------
+\section*{PROJECT EXPERIENCE}
+
+\textbf{AI Question Bank Generator (RAG Pipeline)}
+\begin{itemize}
+    \item Designed a full-stack AI-powered question bank system using Python, LangChain, and PostgreSQL vector storage, enabling infinite scalable knowledge generation.
+    \item Engineered backend retrieval pipelines integrating LLM-generated outputs into application workflows via semantic search, delivering context-aware question synthesis.
+    \item Established asynchronous and event-driven processing flows for scalable AI workload handling across multi-source document embeddings.
+\end{itemize}
+
+%------------------------
+\section*{PROFESSIONAL DEVELOPMENT}
+
+\resumeHeader{New Age Software Engineering Program (Ongoing)}{Nov 2025 -- May 2026}\\
+Masai School in collaboration with IIT Roorkee
+\noindent
+\begin{itemize}
+    \item Applying AI-focused software engineering techniques including token lifecycle management and structured prompt engineering within production-grade architectures.
+    \item Designing distributed systems capable of integrating LLM-backed components into scalable backend architectures.
+    \item Advancing cloud-native deployment and service orchestration expertise with emphasis on AI-integrated production systems.
+\end{itemize}
+
+%------------------------
+\section*{EDUCATION}
+
+\resumeHeader{B.Tech in Electronics \& Communication Engineering}{2016 -- 2020}\\
+SRM University, Chennai, India
+
+\end{document}

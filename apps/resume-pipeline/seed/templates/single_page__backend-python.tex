@@ -1,0 +1,113 @@
+\documentclass[10pt]{article}
+
+\usepackage[a4paper,margin=0.5in]{geometry}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage[T1]{fontenc}
+\usepackage{charter}
+\usepackage[utf8]{inputenc}
+
+\definecolor{sectioncolor}{RGB}{0,102,102}
+
+\titleformat{\section}
+  {\normalsize\bfseries\color{sectioncolor}}
+  {}
+  {0em}
+  {}
+  [\titlerule]
+
+\titlespacing*{\section}{0pt}{6pt}{4pt}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\setlist[itemize]{leftmargin=1.4em,labelsep=0.5em,noitemsep,topsep=2pt,parsep=0pt}
+
+\newcommand{\resumeHeader}[2]{%
+  \noindent\makebox[\textwidth][l]{%
+    \parbox[t]{0.78\textwidth}{\textbf{#1}}%
+    \hfill
+    #2%
+  }%
+}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{HAMSA VARDHAN}}\\[2pt]
+London, UK \;|\; +44 07767930695 \;|\;
+\href{mailto:hamsavardhan99@gmail.com}{hamsavardhan99@gmail.com} \;|\;
+\href{https://linkedin.com/in/hamsa-vardhan}{\underline{LinkedIn}} \;|\;
+\href{https://github.com/hamsa-vd}{\underline{GitHub}} \;|\;
+\href{https://calendly.com/hamsa-vd/intro-call}{\underline{Calendly}}
+\end{center}
+
+\vspace{-2pt}
+
+%------------------------
+\section*{PROFESSIONAL SUMMARY}
+
+Python Backend Engineer with 5+ years building Django/FastAPI services, automation workflows, and cloud-native APIs across product and consulting environments. Strongest in Python service development, AI-enabled integrations, and AWS-backed backend delivery.
+\begin{itemize}
+  \item Built Python services for internal tooling, automation, and AI workflows across lean product teams and enterprise programs.
+  \item Hands-on depth in Django, FastAPI, REST APIs, LangChain, RAG pipelines, PostgreSQL, Docker, and AWS-based deployment patterns.
+  \item Experienced partnering with product, data, and engineering teams to ship secure, scalable services that reduce manual business processes and improve delivery efficiency.
+\end{itemize}
+
+%------------------------
+\section*{TECHNICAL SKILL SET}
+
+\textbf{Backend:} Python, Django, FastAPI, Flask, REST APIs, Microservices\\
+\textbf{AI Integration:} LangChain, OpenAI integrations, RAG pipelines, Embedding-based retrieval\\
+\textbf{Cloud \& DevOps:} AWS (EC2, Lambda, ECS, CloudFront, S3), Docker, Kubernetes\\
+\textbf{Databases:} PostgreSQL, MySQL, MongoDB, Redis\\
+\textbf{Messaging:} Apache Kafka, RabbitMQ \quad
+\textbf{Observability:} Prometheus, Grafana
+
+%------------------------
+\section*{WORK EXPERIENCE}
+
+\resumeHeader{Software Engineer}{Aug 2022 -- Present}\\
+\textit{Liv-Ex, London, UK}
+\noindent
+\begin{itemize}
+  \item Built Django-based internal tools and FastAPI services supporting internal data workflows and lightweight AI-enabled use cases.
+  \item Delivered automation for finance and logistics processes that reduced business workflows from days to hours through backend services and schedulers.
+  \item Developed Python utilities for infrastructure automation, API key rotation, and operational monitoring across AWS-backed services.
+  \item Introduced Prometheus and Grafana observability stack, eliminating manual log debugging and enabling proactive alerting across Dockerized services.
+  \item Migrated search infrastructure from Lucene to AWS OpenSearch, cutting search latency from \raise.17ex\hbox{$\scriptstyle\sim$}3s to \raise.17ex\hbox{$\scriptstyle\sim$}300ms for richer search workflows.
+  \item Strengthened API security by supporting JWT-based authentication and validation flows across backend services.
+  \item Worked across Python, Java, and Node-based service boundaries to support distributed systems and cloud-native platform delivery.
+\end{itemize}
+
+\vspace{4pt}
+
+\resumeHeader{Junior Software Engineer}{Jan 2021 -- Jul 2022}\\
+\textit{Presidio, Chennai, India}
+\noindent
+\begin{itemize}
+  \item Delivered backend functionality using Python alongside Java and .NET services across enterprise healthcare systems.
+  \item Built AWS Lambda and SNS-based alerting workflows to improve operational visibility and reliability.
+  \item Resolved PostgreSQL race conditions and deadlock issues in production, strengthening data consistency in high-traffic modules.
+  \item Worked closely with DevOps, QA, and security teams while supporting enterprise delivery across multiple backend stacks.
+\end{itemize}
+
+%------------------------
+\section*{PROFESSIONAL DEVELOPMENT}
+
+\resumeHeader{New Age Software Engineering Program}{Nov 2025 -- May 2026}\\
+Masai School in collaboration with IIT Roorkee
+\noindent
+\begin{itemize}
+    \item Applying AI-focused software engineering techniques including distributed system design with LLM-backed components and cloud-native orchestration.
+    \item Expanding practical knowledge of AI integration, software architecture decision-making, and modern engineering workflows through ongoing coursework and hands-on application.
+\end{itemize}
+
+%------------------------
+\section*{EDUCATION}
+
+\resumeHeader{B.Tech in Electronics and Communication Engineering (ECE)}{2020}\\
+SRM University, Chennai, India
+
+\end{document}

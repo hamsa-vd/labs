@@ -1,0 +1,115 @@
+% Pre-warms Tectonic's package cache into the image so the running container
+% needs no network at all. The first block is exactly what the ten seeded
+% templates use; the second is the common set a user-supplied template is most
+% likely to reach for. A package missing here means a compile failure at
+% runtime that no amount of retrying fixes, so add rather than trim.
+%
+% Packages are not the whole story. The service compiles with --only-cached, so
+% anything the engine asks the bundle for at runtime must already be in this
+% image: the class option files for every point size a template declares, and a
+% TFM for every font family, series, shape and design size a template reaches.
+% The two blocks after the preamble warm those. Without them a seeded template
+% fails with `File 'size10.clo' not found` or `Metric (TFM) file not found`,
+% which is a cache miss wearing a TeX error's clothes.
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{charter}
+\usepackage{enumitem}
+\usepackage[margin=0.5in]{geometry}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{xcolor}
+
+\usepackage{array}
+\usepackage{babel}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{latexsym}
+\usepackage{multicol}
+\usepackage{ragged2e}
+\usepackage{setspace}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{fullpage}
+\usepackage{marvosym}
+\usepackage{verbatim}
+
+% One image can only warm one document class, so the sibling point-size option
+% files are pulled in by hand. The seeded templates declare 10pt and 11pt, and
+% an article with no option at all is 10pt.
+\makeatletter
+\InputIfFileExists{size10.clo}{}{}
+\InputIfFileExists{size12.clo}{}{}
+\InputIfFileExists{size11.clo}{}{}
+\makeatother
+
+% Every size step article produces at 10pt and at 11pt, so the matching design
+% size of each font is fetched now rather than at runtime.
+\newcommand{\warmatsize}[1]{{\fontsize{#1}{#1}\selectfont Ag1,\ }}
+% The seeded templates separate contact details with `\;`, which is a maths
+% command, so every one of them silently enters maths mode and needs the
+% Computer Modern maths families -- both their TFMs and, at the xdvipdfmx
+% stage, their Type 1 outlines. Superscripts and subscripts are here to pull
+% the script and scriptscript design sizes down too.
+% hyperref and the seeded templates reach into the TS1 text companion
+% encoding for symbols such as the bullet and the degree sign, which lives in
+% its own set of TFMs.
+\newcommand{\warmcompanion}[1]{%
+  {\fontsize{#1}{#1}\selectfont
+   {\fontfamily{lmr}\selectfont
+    \textcopyright\textregistered\texttrademark\textdegree\textbullet}%
+   {\fontfamily{bch}\selectfont
+    \textcopyright\textregistered\texttrademark\textdegree\textbullet}%
+   \par}%
+}
+\newcommand{\warmmath}[1]{%
+  {\fontsize{#1}{#1}\selectfont
+   A \;|\; B $x^{2}_{1} + \sum_{i=1}^{n} \alpha_{i} \le \beta \; \Gamma$\par}%
+}
+\newcommand{\warmface}[3]{%
+  {\fontfamily{#1}\fontseries{#2}\fontshape{#3}%
+   \warmatsize{5}\warmatsize{6}\warmatsize{7}\warmatsize{8}\warmatsize{9}%
+   \warmatsize{10}\warmatsize{10.95}\warmatsize{11}\warmatsize{12}%
+   \warmatsize{14.4}\warmatsize{17.28}\warmatsize{20.74}\warmatsize{24.88}%
+   \par}%
+}
+
+\begin{document}
+\section*{Warmup}
+\textbf{Bold} \textit{italic} \texttt{mono} \href{https://example.com}{link}.
+\begin{itemize}\item One \item Two\end{itemize}
+
+% Latin Modern is the default family when a template loads fontenc but no font
+% package, which is what the multi-page seeded templates do.
+\warmface{lmr}{m}{n}
+\warmface{lmr}{m}{it}
+\warmface{lmr}{m}{sl}
+\warmface{lmr}{m}{sc}
+\warmface{lmr}{b}{n}
+\warmface{lmr}{bx}{n}
+\warmface{lmr}{bx}{it}
+\warmface{lmss}{m}{n}
+\warmface{lmss}{bx}{n}
+\warmface{lmtt}{m}{n}
+\warmface{lmtt}{m}{it}
+\warmface{lmtt}{bx}{n}
+
+% Charter is what the single-page seeded templates load.
+\warmface{bch}{m}{n}
+\warmface{bch}{m}{it}
+\warmface{bch}{m}{sl}
+\warmface{bch}{m}{sc}
+\warmface{bch}{b}{n}
+\warmface{bch}{b}{it}
+
+\warmmath{5}\warmmath{6}\warmmath{7}\warmmath{8}\warmmath{9}\warmmath{10}
+\warmmath{10.95}\warmmath{11}\warmmath{12}\warmmath{14.4}\warmmath{17.28}
+\warmmath{20.74}\warmmath{24.88}
+
+\warmcompanion{5}\warmcompanion{6}\warmcompanion{7}\warmcompanion{8}
+\warmcompanion{9}\warmcompanion{10}\warmcompanion{10.95}\warmcompanion{11}
+\warmcompanion{12}\warmcompanion{14.4}\warmcompanion{17.28}
+\warmcompanion{20.74}\warmcompanion{24.88}
+\end{document}
