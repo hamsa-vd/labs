@@ -1,0 +1,12 @@
+{
+  "name": "hamsa-designs",
+  "private": true,
+  "description": "Hamsa Designs monorepo: reusable design-system packages, assets, components, and agent guidance.",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "serve": "npx --yes serve ."
+  },
+  "version": "0.1.0"
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Arey Design"
+  short_description: "Design and build interfaces with Arey"
+  default_prompt: "Use $arey-design to create an Arey interface from my requirements."

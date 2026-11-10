@@ -1,0 +1,19 @@
+/* arey design system — global entry (source). Imports only.
+   This is the build INPUT, not what's published: the bare "@phosphor-icons/web/*"
+   specifiers below only resolve through a bundler that understands package exports.
+   `npm run build` vendors them into a self-contained, relative-path `dist/styles.css` —
+   that's what `@hamsa-designs/arey/styles.css` resolves to and what a plain <link> needs. */
+@import url("@phosphor-icons/web/regular");
+@import url("@phosphor-icons/web/thin");
+@import url("@phosphor-icons/web/light");
+@import url("@phosphor-icons/web/bold");
+@import url("@phosphor-icons/web/fill");
+@import url("@phosphor-icons/web/duotone");
+@import url("tokens/fonts.css");
+@import url("tokens/colors.css");
+@import url("tokens/typography.css");
+@import url("tokens/spacing.css");
+@import url("tokens/radius.css");
+@import url("tokens/elevation.css");
+@import url("tokens/motion.css");
+@import url("tokens/base.css");

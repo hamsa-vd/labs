@@ -1,0 +1,25 @@
+/* arey elevation. Shadows are soft, low-contrast, and always paired with a hairline border.
+   Glass is the signature raised surface: translucent fill + backdrop blur + bright hairline. */
+:root{
+  --blur-sm:8px;--blur-md:20px;--blur-lg:40px;
+  --backdrop-glass:saturate(180%) blur(var(--blur-md));
+
+  --shadow-xs:0 1px 2px rgba(0,0,0,.05);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.04);
+  --shadow-lg:0 12px 32px rgba(0,0,0,.10),0 2px 6px rgba(0,0,0,.04);
+  --shadow-xl:0 28px 72px rgba(0,0,0,.14),0 4px 12px rgba(0,0,0,.05);
+  --shadow-inset:inset 0 1px 0 rgba(255,255,255,.6);
+  --ring-focus:0 0 0 3px rgba(0,113,227,.22);
+  --ring-danger:0 0 0 3px rgba(215,0,21,.20);
+}
+[data-theme="dark"]{
+  --shadow-xs:0 1px 2px rgba(0,0,0,.5);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.6),0 1px 2px rgba(0,0,0,.4);
+  --shadow-md:0 4px 14px rgba(0,0,0,.6),0 1px 3px rgba(0,0,0,.4);
+  --shadow-lg:0 14px 36px rgba(0,0,0,.7),0 2px 6px rgba(0,0,0,.4);
+  --shadow-xl:0 32px 80px rgba(0,0,0,.8),0 4px 12px rgba(0,0,0,.5);
+  --shadow-inset:inset 0 1px 0 rgba(255,255,255,.07);
+  --ring-focus:0 0 0 3px rgba(10,132,255,.32);
+  --ring-danger:0 0 0 3px rgba(255,69,58,.3);
+}

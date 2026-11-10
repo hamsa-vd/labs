@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "arey",
+  "name": "Arey",
+  "package": "@hamsa-designs/arey",
+  "skill": "./SKILL.md",
+  "guidelines": "./readme.md",
+  "styles": "./styles.css",
+  "react": "./components/index.jsx",
+  "tokens": "./tokens",
+  "components": "./components",
+  "assets": "./assets",
+  "uiKits": "./ui_kits"
+}

@@ -1,0 +1,14 @@
+/* arey base layer. Minimal resets + the two things every page needs: link colors and selection. */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg-canvas);color:var(--text-body);font:var(--type-body);letter-spacing:var(--tracking-body);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+h1,h2,h3,h4,p,figure,blockquote{margin:0}
+h1,h2,h3,h4{color:var(--text-primary);letter-spacing:var(--tracking-heading)}
+a{color:var(--text-link);text-decoration:none;transition:opacity var(--duration-fast) var(--ease-out)}
+a:hover{opacity:.7}
+a:active{opacity:.55}
+code,kbd,pre,samp{font-family:var(--font-mono)}
+::selection{background:var(--accent-wash);color:var(--text-accent)}
+:focus-visible{outline:2px solid var(--border-focus);outline-offset:2px}
+button,input,select,textarea{font-family:inherit;font-size:inherit}
+[data-mono-eyebrow]{font:var(--type-eyebrow);letter-spacing:var(--tracking-eyebrow);text-transform:uppercase;color:var(--text-tertiary)}

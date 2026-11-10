@@ -1,0 +1,4 @@
+interface:
+  display_name: "Hamsa Designs"
+  short_description: "Discover and apply installed design systems"
+  default_prompt: "Use $hamsa-designs to build this interface with the design system installed in my application."

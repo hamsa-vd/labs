@@ -1,0 +1,48 @@
+<!-- @dsCard group="Components" viewport="700x340" name="Navigation" subtitle="Tabs, SegmentedControl, Breadcrumbs, SidebarNav, ListRow" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<style>html,body{margin:0}body{background:var(--bg-base);padding:20px;font:var(--type-body);color:var(--text-body)}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.col{display:grid;gap:14px}
+.lbl{font:var(--type-eyebrow);letter-spacing:var(--tracking-eyebrow);text-transform:uppercase;color:var(--text-tertiary)}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script></head>
+<body><div id="root"></div>
+<script type="text/babel">
+const NS = window.AreyDesignSystem_1909f9;
+
+const { Tabs, SegmentedControl, Breadcrumbs, SidebarNav, List, ListRow, IconButton, Badge, Switch } = NS;
+function Demo() {
+  const [tab, setTab] = React.useState('deployments');
+  const [range, setRange] = React.useState('7d');
+  const [nav, setNav] = React.useState('deployments');
+  return (
+    <div style={{display:'grid',gridTemplateColumns:'200px 1fr',gap:20}}>
+      <div style={{background:'var(--bg-subtle)',border:'1px solid var(--border-subtle)',borderRadius:'var(--radius-card)'}}>
+        <SidebarNav value={nav} onChange={setNav} groups={[
+          {items:[{value:'overview',label:'Overview',icon:'squares-four'}]},
+          {label:'Project',items:[
+            {value:'deployments',label:'Deployments',icon:'rocket-launch',count:24},
+            {value:'logs',label:'Logs',icon:'terminal-window'},
+            {value:'settings',label:'Settings',icon:'gear-six'}]}]} />
+      </div>
+      <div className="col">
+        <Breadcrumbs items={[{label:'riya',href:'#'},{label:'arey-web',href:'#'},{label:'Deployments'}]} />
+        <Tabs value={tab} onChange={setTab} items={[{value:'overview',label:'Overview'},{value:'deployments',label:'Deployments',count:24},{value:'settings',label:'Settings',icon:'gear-six'}]} />
+        <div className="row">
+          <Tabs variant="pill" value={range} onChange={setRange} items={['24h','7d','30d']} />
+          <div style={{flex:1,maxWidth:200}}><SegmentedControl value={range} onChange={setRange} options={[{value:'24h',label:'Day'},{value:'7d',label:'Week'},{value:'30d',label:'Month'}]} /></div>
+        </div>
+        <List inset>
+          <ListRow icon="bell" title="Notifications" chevron onClick={()=>{}} />
+          <ListRow icon="moon" title="Appearance" value="System" chevron onClick={()=>{}} />
+          <ListRow icon="key" title="API key" value="sk_live_9f2a" mono trailing={<IconButton icon="copy" label="Copy" size="sm" />} />
+          <ListRow leading={<span style={{width:8,height:8,borderRadius:9,background:'var(--success-solid)'}} />} title="arey-web" subtitle="main · 3 m ago" trailing={<Badge tone="success" size="sm">Ready</Badge>} />
+        </List>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+</script></body></html>

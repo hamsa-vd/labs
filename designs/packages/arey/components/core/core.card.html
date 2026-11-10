@@ -1,0 +1,64 @@
+<!-- @dsCard group="Components" viewport="700x300" name="Core" subtitle="Button, IconButton, Badge, Tag, Kbd, Avatar, Card" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<style>html,body{margin:0}body{background:var(--bg-base);padding:20px;font:var(--type-body);color:var(--text-body)}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.col{display:grid;gap:14px}
+.lbl{font:var(--type-eyebrow);letter-spacing:var(--tracking-eyebrow);text-transform:uppercase;color:var(--text-tertiary)}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script></head>
+<body><div id="root"></div>
+<script type="text/babel">
+const NS = window.AreyDesignSystem_1909f9;
+
+const { Button, IconButton, Badge, Tag, Kbd, Avatar, AvatarStack, Card } = NS;
+function Demo() {
+  return (
+    <div className="col">
+      <div className="row">
+        <Button variant="primary" iconLeft="rocket-launch">Deploy</Button>
+        <Button>Cancel</Button>
+        <Button variant="ghost" iconRight="arrow-up-right">Logs</Button>
+        <Button variant="inverse">Get started</Button>
+        <Button variant="danger">Delete</Button>
+        <Button variant="link">Docs</Button>
+        <Button variant="primary" loading>Deploying</Button>
+        <Button variant="secondary" disabled>Disabled</Button>
+      </div>
+      <div className="row">
+        <Button size="sm">Small</Button>
+        <Button size="md">Medium</Button>
+        <Button size="lg">Large</Button>
+        <IconButton icon="dots-three" label="More" />
+        <IconButton icon="sun" label="Theme" variant="bordered" />
+        <IconButton icon="star" label="Star" weight="fill" aria-pressed="true" />
+        <IconButton icon="x" label="Close" size="sm" />
+      </div>
+      <div className="row">
+        <Badge tone="success" dot>Ready</Badge>
+        <Badge tone="danger" dot>Failed</Badge>
+        <Badge tone="warning" dot>Building</Badge>
+        <Badge dot>Queued</Badge>
+        <Badge tone="accent">Production</Badge>
+        <Badge tone="outline">Preview</Badge>
+        <Badge mono size="sm">v4.2.0</Badge>
+        <Tag icon="funnel" onClick={()=>{}} selected>Production</Tag>
+        <Tag onRemove={()=>{}}>node-20</Tag>
+        <Kbd keys="cmd+k" />
+      </div>
+      <div className="row">
+        <Avatar name="Riya Menon" size="lg" />
+        <Avatar name="arey web" square tone="accent" size="lg" />
+        <AvatarStack people={[{name:'Riya Menon'},{name:'Dev Kapoor'},{name:'Sam Ito'},{name:'Lea Fischer'},{name:'Nils Berg'}]} />
+        <div style={{flex:1,minWidth:220}}>
+          <Card title="Bandwidth" description="Current period" action={<Badge mono size="sm">412 GB</Badge>}>
+            <div style={{font:'var(--type-title-1)',color:'var(--text-primary)',letterSpacing:'var(--tracking-heading)'}}>68 %</div>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+</script></body></html>

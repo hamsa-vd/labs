@@ -1,0 +1,23 @@
+{
+  "name": "@hamsa-designs/agent",
+  "version": "1.0.0",
+  "description": "One-time agent integration for discovering and using Hamsa design systems.",
+  "type": "module",
+  "bin": {
+    "hamsa-designs": "./bin/cli.mjs"
+  },
+  "files": [
+    "agents",
+    "bin",
+    "scripts",
+    "SKILL.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/hamsa-vd/hamsa-designs.git",
+    "directory": "packages/agent"
+  }
+}
